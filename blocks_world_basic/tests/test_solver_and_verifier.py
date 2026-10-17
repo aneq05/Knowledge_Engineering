@@ -1,0 +1,40 @@
+import unittest
+
+from src.blocks_world import BlockWorldState, verify_plan
+from src.dfs import solve_dfs
+
+
+class SolverAndVerifierTests(unittest.TestCase):
+    def setUp(self):
+        self.start = BlockWorldState((0, 1, 0, 2, 3))
+        self.goal = BlockWorldState((2, 3, 4, 5, 0))
+
+    def test_dfs_solves_reference_problem(self):
+        result = solve_dfs(
+            self.start,
+            self.goal,
+            node_limit=20_000,
+            time_limit_seconds=2.0,
+        )
+        self.assertTrue(result.solved, result)
+        self.assertTrue(verify_plan(self.start, self.goal, result.moves).valid)
+
+    def test_reference_solution_has_seven_moves_with_ordering(self):
+        result = solve_dfs(self.start, self.goal)
+        self.assertEqual(len(result.moves), 7)
+
+    def test_verifier_reports_first_illegal_move(self):
+        result = verify_plan(self.start, self.goal, [(4, 5)])
+        self.assertFalse(result.valid)
+        self.assertEqual(result.failed_move_index, 1)
+        self.assertIn("wariancie podstawowym", result.message)
+
+    def test_verifier_rejects_legal_but_incomplete_plan(self):
+        result = verify_plan(self.start, self.goal, [(4, 0)])
+        self.assertFalse(result.valid)
+        self.assertIsNone(result.failed_move_index)
+        self.assertIn("Stan końcowy", result.message)
+
+
+if __name__ == "__main__":
+    unittest.main()
