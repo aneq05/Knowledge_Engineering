@@ -23,6 +23,27 @@ class SolverAndVerifierTests(unittest.TestCase):
         result = solve_dfs(self.start, self.goal)
         self.assertEqual(len(result.moves), 7)
 
+    def test_reports_node_limit(self):
+        result = solve_dfs(
+            self.start,
+            self.goal,
+            node_limit=1,
+            time_limit_seconds=2.0,
+        )
+        self.assertEqual(result.status, "node_limit")
+        self.assertEqual(result.expanded_nodes, 1)
+        self.assertFalse(result.solved)
+
+    def test_reports_time_limit(self):
+        result = solve_dfs(
+            self.start,
+            self.goal,
+            node_limit=20_000,
+            time_limit_seconds=1e-12,
+        )
+        self.assertEqual(result.status, "time_limit")
+        self.assertFalse(result.solved)
+
     def test_verifier_reports_first_illegal_move(self):
         result = verify_plan(self.start, self.goal, [(4, 5)])
         self.assertFalse(result.valid)

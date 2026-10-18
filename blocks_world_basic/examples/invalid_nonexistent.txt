@@ -1,0 +1,5 @@
+# Błąd: przy N=3 klocek 2 leży na nieistniejącym klocku 4.
+0 4 0
+
+# Poprawny stan docelowy.
+0 0 0

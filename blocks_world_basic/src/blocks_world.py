@@ -1,5 +1,3 @@
-"""Stan, ruchy, wejście i weryfikacja podstawowego Blocks World."""
-
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
@@ -21,8 +19,6 @@ class InputFormatError(ValueError):
 
 @dataclass(frozen=True)
 class BlockWorldState:
-    """support[i-1] mówi, na czym leży klocek i; 0 oznacza stół."""
-
     supports: tuple[int, ...]
 
     def __post_init__(self):
@@ -43,8 +39,6 @@ class BlockWorldState:
         return set(range(1, self.size + 1)) - occupied
 
     def legal_moves(self) -> list[Move]:
-        """Ruchy 1-2 z wariantu podstawowego."""
-
         clear = sorted(self.clear_blocks())
         moves = []
         for block in clear:

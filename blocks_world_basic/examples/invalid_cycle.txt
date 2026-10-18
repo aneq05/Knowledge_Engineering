@@ -1,0 +1,5 @@
+# Przykład niepoprawny: klocek 1 leży na 2, a klocek 2 leży na 1.
+2 1 0
+
+# Poprawny stan docelowy nie ma znaczenia, bo stan początkowy zostanie odrzucony.
+0 0 0

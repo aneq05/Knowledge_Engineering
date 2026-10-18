@@ -13,18 +13,28 @@ eksperymenty dla `N=3..15`.
 - `tests/` — automatyczne testy jednostkowe,
 - `examples/` — przykładowe dane z instrukcji.
 
+Przykłady obejmują prosty problem dla `N=3`, problem referencyjny dla `N=5`,
+większy problem dla `N=8` oraz niepoprawny układ z cyklem demonstrujący walidację.
+
 ## Uruchomienie
 
 W folderze projektu:
 
 ```powershell
-py -3 -m src.main solve examples/example.txt
+py -3 -m src.main
 ```
 
-Zmiana limitów:
+Można też wskazać plik bez zmieniania kodu:
 
 ```powershell
-py -3 -m src.main solve examples/example.txt --node-limit 200000 --time-limit 10
+py -3 -m src.main examples/simple_3.txt
+```
+
+Plik wejściowy wybiera się przez zmianę stałej `INPUT_FILE` w `src/main.py`,
+na przykład:
+
+```python
+INPUT_FILE = "examples/simple_3.txt"
 ```
 
 Testy:
@@ -33,12 +43,6 @@ Testy:
 py -3 -m unittest discover -s tests -v
 ```
 
-Raport dla 65 problemów (5 przypadków dla każdego `N=3..15`):
-
-```powershell
-py -3 -m src.main report --output reports --seed 20261017
-```
-
-Przekroczenie limitu dla dużego `N` jest prawidłowym wynikiem eksperymentu.
-DFS nie gwarantuje najkrótszej sekwencji; taki wymóg pojawia się dopiero w
-wariancie rozszerzonym na 6 punktów.
+`main.py` uruchamia wyłącznie algorytm. Raport nie jest generowany podczas
+zwykłego uruchomienia programu. DFS nie gwarantuje najkrótszej sekwencji;
+taki wymóg pojawia się dopiero w wariancie rozszerzonym na 6 punktów.

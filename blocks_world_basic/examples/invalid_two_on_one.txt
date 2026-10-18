@@ -1,0 +1,5 @@
+# Błąd: klocki 2 i 3 leżą bezpośrednio na klocku 1.
+0 1 1
+
+# Poprawny stan docelowy.
+0 0 0

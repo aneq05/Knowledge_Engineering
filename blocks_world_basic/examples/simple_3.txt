@@ -1,0 +1,5 @@
+# start: wszystkie klocki leżą na stole
+0 0 0
+
+# cel: jedna wieża [1 2 3], od dołu do góry
+0 1 2

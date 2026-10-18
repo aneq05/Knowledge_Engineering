@@ -1,0 +1,5 @@
+# Błąd: klocek 1 leży na samym sobie.
+1 0 0
+
+# Poprawny stan docelowy.
+0 0 0
