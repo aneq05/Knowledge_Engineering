@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from time import perf_counter
 
-from .blocks_world import BlockWorldState, Move
+from .state import BlockWorldState, Move
 
 
 @dataclass(frozen=True)
@@ -22,11 +22,6 @@ def solve_dfs(
     node_limit: int = 200_000,
     time_limit_seconds: float = 10.0,
 ) -> SearchResult:
-    if start.size != goal.size:
-        raise ValueError("Stany muszą mieć ten sam rozmiar.")
-    if node_limit < 1 or time_limit_seconds <= 0:
-        raise ValueError("Limity muszą być dodatnie.")
-
     started = perf_counter()
     stack = [start]
     visited = {start}

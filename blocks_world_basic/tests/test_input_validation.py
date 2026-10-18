@@ -1,6 +1,6 @@
 import unittest
 
-from src.blocks_world import InputFormatError, read_problem
+from src.input_reader import read_problem
 
 
 class FileValidationTests(unittest.TestCase):
@@ -14,7 +14,7 @@ class FileValidationTests(unittest.TestCase):
 
         for path, expected_message in cases.items():
             with self.subTest(path=path):
-                with self.assertRaisesRegex(InputFormatError, expected_message):
+                with self.assertRaisesRegex(ValueError, expected_message):
                     read_problem(path)
 
 

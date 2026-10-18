@@ -1,12 +1,11 @@
-"""Losowe problemy, pomiary i raport dla punktu 4."""
-
 import csv
 import random
 from dataclasses import dataclass
 from pathlib import Path
 
-from .blocks_world import BlockWorldState, verify_plan
-from .dfs import SearchResult, solve_dfs
+from .dfs import solve_dfs
+from .state import BlockWorldState
+from .verifier import verify_plan
 
 DEFAULT_SEED = 20261017
 
@@ -43,30 +42,47 @@ def generate_cases(
     return tuple(cases)
 
 
-def generate_report(
-    output="reports",
+def save_results(
+    output="results/results.csv",
     seed=DEFAULT_SEED,
     node_limit=200_000,
     time_limit=2.0,
-) -> tuple[Path, Path]:
-    output = Path(output)
-    output.mkdir(parents=True, exist_ok=True)
-    results = []
+) -> Path:
+    output_path = Path(output)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    for case in generate_cases(seed):
-        result = solve_dfs(case.start, case.goal, node_limit, time_limit)
-        verified = result.solved and verify_plan(case.start, case.goal, result.moves).valid
-        results.append((case, result, verified))
-
-    csv_path = output / "results.csv"
-    with csv_path.open("w", newline="", encoding="utf-8") as file:
+    with output_path.open("w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
         writer.writerow(
-            ["N", "nr", "start", "cel", "status", "długość", "węzły", "czas_s", "weryfikacja"]
+            [
+                "ziarno",
+                "N",
+                "nr",
+                "start",
+                "cel",
+                "status",
+                "długość",
+                "rozwinięte_węzły",
+                "czas_s",
+                "weryfikacja",
+                "sekwencja_dla_N_do_8",
+            ]
         )
-        for case, result, verified in results:
+
+        for case in generate_cases(seed):
+            result = solve_dfs(case.start, case.goal, node_limit, time_limit)
+            if result.solved:
+                verified, verification_message = verify_plan(
+                    case.start, case.goal, result.moves
+                )
+            else:
+                verified = False
+                verification_message = "Nie zweryfikowano - przekroczono limit."
+
+            moves = " -> ".join(map(str, result.moves)) if case.size <= 8 else ""
             writer.writerow(
                 [
+                    seed,
                     case.size,
                     case.number,
                     case.start.to_line(),
@@ -75,56 +91,15 @@ def generate_report(
                     len(result.moves) if result.solved else "",
                     result.expanded_nodes,
                     f"{result.elapsed_seconds:.6f}",
-                    "OK" if verified else "NIE DOTYCZY/BŁĄD",
+                    "OK" if verified else verification_message,
+                    moves,
                 ]
             )
 
-    report_path = output / "report.md"
-    report_path.write_text(
-        _markdown(results, seed, node_limit, time_limit), encoding="utf-8"
-    )
-    return report_path, csv_path
+    return output_path
 
 
-def _markdown(results, seed, node_limit, time_limit) -> str:
-    lines = [
-        "# Raport — Blocks World, wariant podstawowy",
-        "",
-        "## Metoda",
-        "",
-        "Zastosowano DFS z backtrackingiem, zbiorem odwiedzonych stanów oraz "
-        "limitami czasu i liczby rozwiniętych węzłów. Ruchy są porządkowane "
-        "tak, aby najpierw budować od dołu poprawne fragmenty wież docelowych, "
-        "a następnie wykonywać ruchy pomocnicze na stół.",
-        "",
-        f"Ziarno: `{seed}`, limit węzłów: `{node_limit}`, limit czasu: `{time_limit} s`.",
-        "",
-        "| N | Nr | Start | Cel | Status | Długość | Węzły | Czas [s] | Weryfikacja |",
-        "|---:|---:|---|---|---|---:|---:|---:|---|",
-    ]
-    for case, result, verified in results:
-        length = len(result.moves) if result.solved else "—"
-        check = "OK" if verified else "NIE DOTYCZY/BŁĄD"
-        lines.append(
-            f"| {case.size} | {case.number} | `{case.start.to_line()}` | "
-            f"`{case.goal.to_line()}` | {result.status} | {length} | "
-            f"{result.expanded_nodes} | {result.elapsed_seconds:.6f} | {check} |"
-        )
-
-    lines += ["", "## Pełne sekwencje dla N ≤ 8", ""]
-    for case, result, _ in results:
-        if case.size <= 8:
-            lines += [f"### N={case.size}, przypadek {case.number}", ""]
-            if result.solved:
-                lines += ["```text", *(str(move) for move in result.moves), "```", ""]
-            else:
-                lines += [f"Przekroczono limit: `{result.status}`.", ""]
-
-    lines += [
-        "## Wnioski",
-        "",
-        "DFS znajduje poprawny plan, ale nie gwarantuje planu najkrótszego. "
-        "Dla większych N przestrzeń stanów rośnie bardzo szybko.",
-        "",
-    ]
-    return "\n".join(lines)
+if __name__ == "__main__":
+    result_file = save_results()
+    print(f"Ziarno generatora: {DEFAULT_SEED}")
+    print(f"Wyniki zapisano w: {result_file}")

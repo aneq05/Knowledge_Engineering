@@ -2,7 +2,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from src.blocks_world import InputFormatError, read_problem
+from src.input_reader import read_problem
 
 
 class InputTests(unittest.TestCase):
@@ -22,7 +22,7 @@ class InputTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "problem.txt"
             path.write_text("0 0 0\n0 0 0 0\n", encoding="utf-8")
-            with self.assertRaisesRegex(InputFormatError, "tyle samo"):
+            with self.assertRaisesRegex(ValueError, "tyle samo"):
                 read_problem(path)
 
 

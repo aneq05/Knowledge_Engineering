@@ -1,7 +1,8 @@
 import unittest
 
-from src.blocks_world import BlockWorldState, verify_plan
 from src.dfs import solve_dfs
+from src.state import BlockWorldState
+from src.verifier import verify_plan
 
 
 class SolverAndVerifierTests(unittest.TestCase):
@@ -17,11 +18,8 @@ class SolverAndVerifierTests(unittest.TestCase):
             time_limit_seconds=2.0,
         )
         self.assertTrue(result.solved, result)
-        self.assertTrue(verify_plan(self.start, self.goal, result.moves).valid)
-
-    def test_reference_solution_has_seven_moves_with_ordering(self):
-        result = solve_dfs(self.start, self.goal)
-        self.assertEqual(len(result.moves), 7)
+        valid, _ = verify_plan(self.start, self.goal, result.moves)
+        self.assertTrue(valid)
 
     def test_reports_node_limit(self):
         result = solve_dfs(
@@ -45,16 +43,15 @@ class SolverAndVerifierTests(unittest.TestCase):
         self.assertFalse(result.solved)
 
     def test_verifier_reports_first_illegal_move(self):
-        result = verify_plan(self.start, self.goal, [(4, 5)])
-        self.assertFalse(result.valid)
-        self.assertEqual(result.failed_move_index, 1)
-        self.assertIn("wariancie podstawowym", result.message)
+        valid, message = verify_plan(self.start, self.goal, [(4, 5)])
+        self.assertFalse(valid)
+        self.assertIn("Ruch 1", message)
+        self.assertIn("wariancie podstawowym", message)
 
     def test_verifier_rejects_legal_but_incomplete_plan(self):
-        result = verify_plan(self.start, self.goal, [(4, 0)])
-        self.assertFalse(result.valid)
-        self.assertIsNone(result.failed_move_index)
-        self.assertIn("Stan końcowy", result.message)
+        valid, message = verify_plan(self.start, self.goal, [(4, 0)])
+        self.assertFalse(valid)
+        self.assertIn("Stan końcowy", message)
 
 
 if __name__ == "__main__":

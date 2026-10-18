@@ -6,7 +6,9 @@ eksperymenty dla `N=3..15`.
 
 ## Struktura
 
-- `src/blocks_world.py` — klasa stanu, walidacja, ruchy, wejście i weryfikacja,
+- `src/state.py` — klasa stanu, walidacja układów i reguły ruchów,
+- `src/input_reader.py` — wczytywanie stanu początkowego i docelowego,
+- `src/verifier.py` — sprawdzanie całej sekwencji ruchów,
 - `src/dfs.py` — DFS z backtrackingiem, statystyki i limity,
 - `src/experiments.py` — losowe przypadki, pomiary i raport Markdown/CSV,
 - `src/main.py` — interfejs programu,
@@ -46,3 +48,13 @@ py -3 -m unittest discover -s tests -v
 `main.py` uruchamia wyłącznie algorytm. Raport nie jest generowany podczas
 zwykłego uruchomienia programu. DFS nie gwarantuje najkrótszej sekwencji;
 taki wymóg pojawia się dopiero w wariancie rozszerzonym na 6 punktów.
+
+## Wyniki eksperymentów do ręcznego raportu
+
+```powershell
+py -3 -m src.experiments
+```
+
+Polecenie zapisuje surowe dane 65 problemów do `results/results.csv`.
+Pełne sekwencje ruchów są zapisywane tylko
+dla `N` od 3 do 8.

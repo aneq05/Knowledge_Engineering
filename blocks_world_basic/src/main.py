@@ -1,7 +1,8 @@
 import sys
 
-from .blocks_world import InputFormatError, read_problem, verify_plan
 from .dfs import solve_dfs
+from .input_reader import read_problem
+from .verifier import verify_plan
 
 
 INPUT_FILE = "examples/example.txt"
@@ -12,12 +13,7 @@ def main():
 
     try:
         start_state, goal_state = read_problem(input_file)
-        # for testing purpose
-        # print(type(start_state))
-        # print(type(goal_state))
-        # print(start_state.supports)
-        # print(goal_state.supports)
-    except (OSError, InputFormatError) as error:
+    except (OSError, ValueError) as error:
         print("Błąd danych wejściowych:", error)
         return
 
@@ -31,8 +27,8 @@ def main():
         for number, move in enumerate(result.moves, start=1):
             print(f"{number}. {move}")
 
-        verification = verify_plan(start_state, goal_state, result.moves)
-        print("\nWeryfikacja:", verification.message)
+        valid, message = verify_plan(start_state, goal_state, result.moves)
+        print("\nWeryfikacja:", message)
     else:
         print("Nie znaleziono rozwiązania:", result.status)
 
