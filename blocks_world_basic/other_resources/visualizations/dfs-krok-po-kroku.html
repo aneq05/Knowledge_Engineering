@@ -1,0 +1,342 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<div id="bw-dfs-explainer" lang="pl">
+  <header class="bw-header"><div><div class="bw-eyebrow">Świat klocków / wariant podstawowy</div><h1>DFS krok po kroku</h1></div><span class="bw-status" data-status></span></header>
+  <nav class="bw-toolbar" aria-label="Sterowanie przebiegiem DFS">
+    <div class="bw-buttons">
+      <button type="button" class="bw-button" data-reset>↺ Początek</button>
+      <button type="button" class="bw-button" data-prev>← Wstecz</button>
+      <button type="button" class="bw-button bw-primary" data-next>Dalej →</button>
+      <button type="button" class="bw-button" data-play aria-pressed="false">▶ Odtwarzaj</button>
+    </div>
+    <label class="bw-field">Krokowanie<select data-mode><option value="operation">Operacje kodu</option><option value="iteration" selected>Całe iteracje DFS</option></select></label>
+    <button type="button" class="bw-button bw-quiet" data-end>Do wyniku ↗</button>
+  </nav>
+  <div class="bw-timeline"><label for="bw-dfs-progress" data-step></label><input id="bw-dfs-progress" data-progress type="range" min="0" value="0" step="1" aria-label="Wybierz krok przebiegu"><span data-iteration></span></div>
+  <div class="bw-event" aria-live="polite" aria-atomic="true"><strong data-action></strong><p data-detail></p></div>
+  <div class="bw-workspace">
+    <section class="bw-section" aria-labelledby="bw-world-title">
+      <div class="bw-heading"><h2 id="bw-world-title">Rozpatrywany układ</h2><code data-state></code></div>
+      <div class="bw-caption"><span data-world-label></span><span data-move-label></span></div>
+      <svg class="bw-world" data-world role="img" aria-label="Aktualny układ klocków"></svg>
+      <div class="bw-legend" aria-label="Kolory klocków" data-legend></div>
+      <div class="bw-representation"><span>Podłoże każdego klocka</span><div data-supports></div></div>
+      <div class="bw-goal"><span>Cel</span><code>2 3 4 5 0</code><span>wieża od dołu: 5 → 4 → 3 → 2 → 1</span></div>
+      <div class="bw-candidate" data-candidate hidden><div><span class="bw-eyebrow">Kandydat · next_state</span><code data-next-state></code><span data-candidate-status></span></div><svg class="bw-preview" data-preview role="img" aria-label="Układ kandydata next_state"></svg></div>
+    </section>
+    <section class="bw-section" aria-labelledby="bw-code-title">
+      <div class="bw-heading"><h2 id="bw-code-title">Twój kod</h2><span class="bw-location" data-location></span></div>
+      <div class="bw-code-tabs" aria-label="Pliki źródłowe"><button type="button" data-file="dfs.py" aria-pressed="true">dfs.py</button><button type="button" data-file="state.py" aria-pressed="false">state.py</button><button type="button" data-file="main.py" aria-pressed="false">main.py</button></div>
+      <div class="bw-code-caption"><code data-function></code><button type="button" class="bw-link" data-follow hidden>Wróć do aktywnej linii</button></div>
+      <div class="bw-code-scroll" data-code-scroll><pre class="bw-source" data-code aria-label="Kod Python z numerami linii"></pre></div>
+      <div class="bw-code-key"><i></i><span>Podświetlenie wskazuje bieżącą operację. Grupa linii oznacza skrót działania funkcji.</span></div>
+    </section>
+  </div>
+  <div class="bw-inspectors">
+    <section class="bw-section" aria-labelledby="bw-vars-title"><div class="bw-heading"><h2 id="bw-vars-title">Stan zmiennych</h2><code data-vars-scope>solve_dfs</code></div><dl class="bw-variables" data-vars></dl><div data-locals></div><details class="bw-details"><summary>Zawartość visited i parent</summary><div data-collections></div></details></section>
+    <section class="bw-section" aria-labelledby="bw-stack-title"><div class="bw-heading"><h2 id="bw-stack-title">Stos DFS</h2><code data-stack-count></code></div><p class="bw-note" data-stack-note></p><ol class="bw-search-stack" data-stack aria-label="Stos DFS, wierzchołek na górze"></ol><p class="bw-empty" data-stack-empty hidden>Stos jest pusty.</p></section>
+    <section class="bw-section" aria-labelledby="bw-calls-title"><div class="bw-heading"><h2 id="bw-calls-title">Stos wywołań</h2><span data-call-count></span></div><p class="bw-note">Aktywna funkcja u góry. Kliknij ramkę, aby zobaczyć jej miejsce w kodzie.</p><ol class="bw-call-stack" data-calls aria-label="Aktywne wywołania funkcji"></ol><p class="bw-recursion-note">Ten DFS jest iteracyjny. Kolejne stany trafiają do <code>stack</code>; nie tworzą rekurencyjnych wywołań <code>solve_dfs</code>.</p></section>
+  </div>
+  <section class="bw-plan-section" data-plan-section hidden aria-labelledby="bw-plan-title"><div class="bw-heading"><h2 id="bw-plan-title">Odtwarzanie planu</h2><span data-plan-direction></span></div><ol class="bw-plan" data-plan></ol></section>
+  <footer class="bw-footer">Kod z <code>blocks_world_basic/src</code> · przykład z <code>examples/example.txt</code>. Przebieg dydaktyczny: pomiar czasu, walidacja i wnętrze części funkcji pomocniczych są pokazane skrótowo.</footer>
+</div>
+<style>
+  #bw-dfs-explainer {--bw-bg:var(--background,#f7f8fa);--bw-surface:var(--card,#fff);--bw-text:var(--foreground,#172b3b);--bw-muted:var(--muted-foreground,#526371);--bw-line:var(--border,#d9e1e7);--bw-soft:color-mix(in srgb,var(--bw-text) 4%,var(--bw-surface));--bw-accent:#17685f;--bw-accent-text:#fff;--bw-highlight:color-mix(in srgb,#2d9886 13%,var(--bw-surface));--bw-block-1:#2364ce;--bw-block-2:#b94f16;--bw-block-3:#16745b;--bw-block-4:#8050bd;--bw-block-5:#b73858;box-sizing:border-box;width:100%;max-width:1440px;margin:0 auto;padding:24px;color:var(--bw-text);background:var(--bw-bg);font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;color-scheme:light dark}
+  #bw-dfs-explainer *,#bw-dfs-explainer *::before {box-sizing:border-box}
+  #bw-dfs-explainer [hidden] {display:none!important}
+  #bw-dfs-explainer h1,#bw-dfs-explainer h2,#bw-dfs-explainer p {margin:0}
+  #bw-dfs-explainer h1 {font-size:clamp(24px,3vw,34px);line-height:1.2;font-weight:680;letter-spacing:-.035em;margin-top:5px}
+  #bw-dfs-explainer h2 {font-size:16px;line-height:1.4;font-weight:650;letter-spacing:-.015em}
+  #bw-dfs-explainer code,#bw-dfs-explainer pre {font-family:"Cascadia Code",Consolas,"Liberation Mono",monospace;font-size:13px}
+  #bw-dfs-explainer button,#bw-dfs-explainer select,#bw-dfs-explainer input {font:inherit}
+  #bw-dfs-explainer button {cursor:pointer}
+  #bw-dfs-explainer button:focus-visible,#bw-dfs-explainer select:focus-visible,#bw-dfs-explainer input:focus-visible,#bw-dfs-explainer summary:focus-visible {outline:3px solid #349e91;outline-offset:3px}
+  #bw-dfs-explainer button:disabled {opacity:.4;cursor:default}
+  #bw-dfs-explainer .bw-header {display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:24px}
+  #bw-dfs-explainer .bw-eyebrow {font-size:11px;letter-spacing:.09em;text-transform:uppercase;font-weight:650;color:var(--bw-muted)}
+  #bw-dfs-explainer .bw-status {color:var(--bw-accent);font-size:12px;font-weight:650;white-space:nowrap}
+  #bw-dfs-explainer .bw-toolbar {display:flex;align-items:end;flex-wrap:wrap;gap:12px;padding:16px 0;border-top:1px solid var(--bw-line)}
+  #bw-dfs-explainer .bw-buttons {display:flex;flex-wrap:wrap;gap:7px}
+  #bw-dfs-explainer .bw-button {min-height:38px;border:1px solid var(--bw-line);background:var(--bw-surface);color:var(--bw-text);padding:8px 12px;border-radius:7px;transition:background .15s,transform .15s;white-space:nowrap}
+  #bw-dfs-explainer .bw-button:hover:not(:disabled) {background:var(--bw-soft);transform:translateY(-1px)}
+  #bw-dfs-explainer .bw-primary {background:var(--bw-accent);color:var(--bw-accent-text);border-color:var(--bw-accent)}
+  #bw-dfs-explainer .bw-primary:hover:not(:disabled) {background:color-mix(in srgb,var(--bw-accent) 88%,#000)}
+  #bw-dfs-explainer .bw-quiet {margin-left:auto;background:transparent;border-color:transparent}
+  #bw-dfs-explainer .bw-field {display:flex;flex-direction:column;gap:4px;font-size:11px;color:var(--bw-muted)}
+  #bw-dfs-explainer select {min-height:38px;max-width:100%;padding:7px 30px 7px 10px;background:var(--bw-surface);border:1px solid var(--bw-line);border-radius:7px;color:var(--bw-text);font-size:13px}
+  #bw-dfs-explainer .bw-timeline {display:grid;grid-template-columns:auto minmax(60px,1fr) auto;align-items:center;gap:16px;color:var(--bw-muted);font-size:12px;font-variant-numeric:tabular-nums}
+  #bw-dfs-explainer input[type=range] {width:100%;margin:0;accent-color:var(--bw-accent);cursor:ew-resize}
+  #bw-dfs-explainer .bw-event {margin:16px 0 22px;padding:4px 0 4px 14px;border-left:3px solid var(--bw-accent);min-height:54px}
+  #bw-dfs-explainer .bw-event strong {font-weight:650}
+  #bw-dfs-explainer .bw-event p {color:var(--bw-muted);margin-top:3px;overflow-wrap:anywhere}
+  #bw-dfs-explainer .bw-workspace {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.08fr);gap:26px;align-items:start}
+  #bw-dfs-explainer .bw-section {min-width:0;padding-top:15px;border-top:1px solid var(--bw-line)}
+  #bw-dfs-explainer .bw-heading {display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px 12px;margin-bottom:12px;min-width:0}
+  #bw-dfs-explainer .bw-heading>code {color:var(--bw-muted);overflow-wrap:anywhere}
+  #bw-dfs-explainer .bw-caption {display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px 12px;font-size:12px;color:var(--bw-muted)}
+  #bw-dfs-explainer .bw-world {display:block;width:100%;height:265px}
+  #bw-dfs-explainer .bw-world text,#bw-dfs-explainer .bw-preview text {font-family:system-ui,sans-serif;fill:var(--bw-text)}
+  #bw-dfs-explainer .bw-world .bw-block-label,#bw-dfs-explainer .bw-preview .bw-block-label {fill:#fff;font-weight:700}
+  #bw-dfs-explainer .bw-block-rect {stroke:color-mix(in srgb,#000 20%,transparent);stroke-width:1}
+  #bw-dfs-explainer .bw-moved {animation:bw-block-arrive .32s ease-out}
+  #bw-dfs-explainer .bw-legend {display:flex;flex-wrap:wrap;gap:8px 18px;justify-content:center;margin:0 0 16px}
+  #bw-dfs-explainer .bw-legend>span {display:flex;gap:6px;align-items:center;font-size:12px;color:var(--bw-muted)}
+  #bw-dfs-explainer .bw-swatch {width:12px;height:12px;display:inline-block;border-radius:3px;flex:none}
+  #bw-dfs-explainer .bw-representation {padding-top:12px;border-top:1px solid var(--bw-line)}
+  #bw-dfs-explainer .bw-representation>span {font-size:12px;color:var(--bw-muted)}
+  #bw-dfs-explainer [data-supports] {display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;margin-top:10px}
+  #bw-dfs-explainer .bw-support {text-align:center;min-width:0}
+  #bw-dfs-explainer .bw-support strong {display:inline-flex;align-items:center;justify-content:center;width:29px;height:29px;border-radius:5px;color:#fff;font-size:13px}
+  #bw-dfs-explainer .bw-support span {display:block;color:var(--bw-muted);font-size:11px;margin-top:4px}
+  #bw-dfs-explainer .bw-goal {display:flex;gap:5px 12px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--bw-muted);margin-top:18px}
+  #bw-dfs-explainer .bw-goal code {color:var(--bw-text)}
+  #bw-dfs-explainer .bw-candidate {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;border-top:1px dashed var(--bw-line);margin-top:16px;padding-top:12px;align-items:center}
+  #bw-dfs-explainer .bw-candidate>div {display:flex;flex-direction:column;gap:7px;min-width:0}
+  #bw-dfs-explainer [data-candidate-status] {font-size:12px;color:var(--bw-muted)}
+  #bw-dfs-explainer .bw-preview {display:block;width:100%;height:150px}
+  #bw-dfs-explainer .bw-location {font-size:11px;color:var(--bw-muted);font-variant-numeric:tabular-nums}
+  #bw-dfs-explainer .bw-code-tabs {display:flex;gap:20px;border-bottom:1px solid var(--bw-line)}
+  #bw-dfs-explainer .bw-code-tabs button {padding:0 0 9px;background:transparent;border:0;border-bottom:2px solid transparent;color:var(--bw-muted);font-family:Consolas,monospace;font-size:12px}
+  #bw-dfs-explainer .bw-code-tabs button[aria-pressed=true] {border-bottom-color:var(--bw-accent);color:var(--bw-text);font-weight:650}
+  #bw-dfs-explainer .bw-code-caption {min-height:38px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:8px 0}
+  #bw-dfs-explainer .bw-code-caption code {font-size:12px;color:var(--bw-muted)}
+  #bw-dfs-explainer .bw-link {padding:0;color:var(--bw-accent);font-size:11px;border:0;background:transparent;text-decoration:underline;text-underline-offset:3px}
+  #bw-dfs-explainer .bw-code-scroll {height:375px;overflow:auto;overscroll-behavior:contain;background:var(--bw-surface);scrollbar-gutter:stable;border-radius:6px}
+  #bw-dfs-explainer .bw-source {margin:0;padding:10px 0;line-height:1.8;tab-size:4;white-space:pre-wrap;font-size:12px}
+  #bw-dfs-explainer .bw-code-line {display:grid;grid-template-columns:36px minmax(0,1fr);min-height:22px;padding:0 10px 0 0;border-left:3px solid transparent}
+  #bw-dfs-explainer .bw-line-number {text-align:right;padding-right:10px;color:var(--bw-muted);user-select:none;font-size:11px}
+  #bw-dfs-explainer .bw-line-content {white-space:pre-wrap;overflow-wrap:anywhere;min-width:0}
+  #bw-dfs-explainer .bw-code-line.is-active {background:var(--bw-highlight);border-left-color:var(--bw-accent)}
+  #bw-dfs-explainer .bw-code-line.is-active .bw-line-number {color:var(--bw-accent);font-weight:700}
+  #bw-dfs-explainer .bw-keyword {color:color-mix(in srgb,#8050bd 85%,var(--bw-text));font-weight:600}
+  #bw-dfs-explainer .bw-string {color:color-mix(in srgb,#16745b 85%,var(--bw-text))}
+  #bw-dfs-explainer .bw-comment {color:var(--bw-muted);font-style:italic}
+  #bw-dfs-explainer .bw-code-key {display:flex;gap:7px;align-items:start;color:var(--bw-muted);font-size:11px;margin-top:10px}
+  #bw-dfs-explainer .bw-code-key i {height:11px;width:11px;margin-top:3px;border-left:3px solid var(--bw-accent);background:var(--bw-highlight);flex:none}
+  #bw-dfs-explainer .bw-inspectors {display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) minmax(0,1fr);gap:26px;margin-top:26px;align-items:start}
+  #bw-dfs-explainer .bw-variables {margin:0;font-variant-numeric:tabular-nums}
+  #bw-dfs-explainer .bw-var {display:grid;grid-template-columns:105px minmax(0,1fr);gap:8px;padding:7px 0;border-bottom:1px solid color-mix(in srgb,var(--bw-line) 55%,transparent)}
+  #bw-dfs-explainer dt {color:var(--bw-muted);min-width:0}
+  #bw-dfs-explainer dd {margin:0;overflow-wrap:anywhere;min-width:0}
+  #bw-dfs-explainer .bw-var.is-changed dd {color:var(--bw-accent);font-weight:650;animation:bw-value-flash .6s ease-out}
+  #bw-dfs-explainer .bw-locals-heading {font-size:12px;font-weight:650;margin:16px 0 6px}
+  #bw-dfs-explainer .bw-note {color:var(--bw-muted);font-size:12px;margin-bottom:14px}
+  #bw-dfs-explainer .bw-note code,#bw-dfs-explainer .bw-recursion-note code {font-size:12px}
+  #bw-dfs-explainer .bw-search-stack,#bw-dfs-explainer .bw-call-stack {list-style:none;margin:0;padding:0}
+  #bw-dfs-explainer .bw-search-stack {max-height:330px;overflow:auto;overscroll-behavior:contain;padding-right:6px}
+  #bw-dfs-explainer .bw-search-stack li {display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;padding:9px 10px;border-bottom:1px solid var(--bw-line);font-variant-numeric:tabular-nums}
+  #bw-dfs-explainer .bw-search-stack li:first-child {background:var(--bw-highlight);border-left:3px solid var(--bw-accent);padding-left:7px}
+  #bw-dfs-explainer .bw-stack-tag {font-size:11px;color:var(--bw-muted)}
+  #bw-dfs-explainer .bw-search-stack li:first-child .bw-stack-tag {color:var(--bw-accent)}
+  #bw-dfs-explainer .bw-call-stack li+li {margin-top:6px}
+  #bw-dfs-explainer .bw-frame {display:flex;flex-direction:column;align-items:start;gap:3px;width:100%;text-align:left;border:0;border-left:2px solid var(--bw-line);background:transparent;color:var(--bw-text);padding:10px 12px;overflow-wrap:anywhere}
+  #bw-dfs-explainer .bw-call-stack li:first-child .bw-frame {background:var(--bw-highlight);border-left-color:var(--bw-accent)}
+  #bw-dfs-explainer .bw-frame span {font-size:11px;color:var(--bw-muted)}
+  #bw-dfs-explainer .bw-recursion-note {color:var(--bw-muted);font-size:12px;margin-top:16px}
+  #bw-dfs-explainer .bw-empty {padding:12px 0;color:var(--bw-muted);font-size:12px}
+  #bw-dfs-explainer .bw-details {margin-top:16px;font-size:12px;min-width:0}
+  #bw-dfs-explainer summary {cursor:pointer;color:var(--bw-muted)}
+  #bw-dfs-explainer .bw-collection {margin-top:10px;max-height:220px;overflow:auto;overflow-wrap:anywhere}
+  #bw-dfs-explainer .bw-collection h3 {font-size:12px;margin:10px 0 5px}
+  #bw-dfs-explainer .bw-collection code {font-size:11px}
+  #bw-dfs-explainer .bw-parent-row {padding:4px 0;border-bottom:1px solid var(--bw-line)}
+  #bw-dfs-explainer .bw-plan-section {margin-top:26px;border-top:1px solid var(--bw-line);padding-top:16px}
+  #bw-dfs-explainer [data-plan-direction] {font-size:12px;color:var(--bw-muted)}
+  #bw-dfs-explainer .bw-plan {display:flex;gap:8px;flex-wrap:wrap;list-style:none;padding:0;margin:0;counter-reset:plan}
+  #bw-dfs-explainer .bw-plan li {counter-increment:plan;display:flex;gap:8px;align-items:center;padding:8px 10px;background:var(--bw-highlight);font-size:12px}
+  #bw-dfs-explainer .bw-plan li::before {content:counter(plan) ".";color:var(--bw-muted)}
+  #bw-dfs-explainer .bw-footer {border-top:1px solid var(--bw-line);margin-top:26px;padding-top:14px;font-size:11px;color:var(--bw-muted);overflow-wrap:anywhere}
+  #bw-dfs-explainer .bw-footer code {font-size:11px}
+  @keyframes bw-block-arrive {from {opacity:.55;transform:translateY(-7px)} to {opacity:1;transform:translateY(0)}}
+  @keyframes bw-value-flash {from {background:var(--bw-highlight)} to {background:transparent}}
+  @media(max-width:1000px) {#bw-dfs-explainer {padding:18px}#bw-dfs-explainer .bw-workspace {gap:20px}#bw-dfs-explainer .bw-inspectors {grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px 20px}#bw-dfs-explainer .bw-inspectors>section:last-child {grid-column:1/-1}#bw-dfs-explainer .bw-call-stack {display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px}#bw-dfs-explainer .bw-call-stack li+li {margin-top:0}}
+  @media(max-width:720px) {#bw-dfs-explainer {padding:16px 12px}#bw-dfs-explainer .bw-header {align-items:start;gap:10px;margin-bottom:18px}#bw-dfs-explainer .bw-header .bw-eyebrow {font-size:10px}#bw-dfs-explainer .bw-status {font-size:11px;margin-top:5px}#bw-dfs-explainer .bw-workspace,#bw-dfs-explainer .bw-inspectors {grid-template-columns:minmax(0,1fr)}#bw-dfs-explainer .bw-world {height:260px}#bw-dfs-explainer .bw-code-scroll {height:330px}#bw-dfs-explainer .bw-timeline {gap:8px;font-size:11px}#bw-dfs-explainer .bw-field {flex:1;min-width:170px}#bw-dfs-explainer .bw-field select {font-size:16px}#bw-dfs-explainer .bw-quiet {margin-left:0}#bw-dfs-explainer .bw-buttons {width:100%}#bw-dfs-explainer .bw-button {min-height:42px;padding:8px 10px;font-size:12px}#bw-dfs-explainer .bw-inspectors>section:last-child {grid-column:auto}#bw-dfs-explainer .bw-call-stack {display:block}#bw-dfs-explainer .bw-call-stack li+li {margin-top:6px}}
+  @media(prefers-color-scheme:dark) {#bw-dfs-explainer {--bw-bg:var(--background,#111b23);--bw-surface:var(--card,#17242e);--bw-text:var(--foreground,#e3ecf2);--bw-muted:var(--muted-foreground,#acbdc9);--bw-line:var(--border,#344653);--bw-accent:#65c9b6;--bw-accent-text:#102e29;--bw-highlight:color-mix(in srgb,#65c9b6 12%,var(--bw-surface))}#bw-dfs-explainer .bw-keyword {color:#c5a2f1}#bw-dfs-explainer .bw-string {color:#86d0b2}}
+  @media(prefers-reduced-motion:reduce) {#bw-dfs-explainer *,#bw-dfs-explainer *::before {animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style>
+<script type="application/json" id="bw-dfs-source">{"dfs.py":"from dataclasses import dataclass\nfrom time import perf_counter\n\nfrom .state import BlockWorldState, Move\n\n\n@dataclass(frozen=True)\nclass SearchResult:\n    status: str\n    moves: tuple[Move, ...]\n    expanded_nodes: int\n    elapsed_seconds: float\n\n    @property\n    def solved(self) -> bool:\n        return self.status == \"solved\"\n\n\ndef solve_dfs(\n    start: BlockWorldState,\n    goal: BlockWorldState,\n    node_limit: int = 200_000,\n    time_limit_seconds: float = 10.0,\n) -> SearchResult:\n    started = perf_counter()\n    stack = [start]\n    visited = {start}\n    parent: dict[BlockWorldState, tuple[BlockWorldState, Move]] = {}\n    expanded = 0\n\n    while stack:\n        elapsed = perf_counter() - started\n        if elapsed >= time_limit_seconds:\n            return SearchResult(\"time_limit\", (), expanded, elapsed)\n        if expanded >= node_limit:\n            return SearchResult(\"node_limit\", (), expanded, elapsed)\n\n        state = stack.pop()\n        if state == goal:\n            return SearchResult(\n                \"solved\", _build_plan(start, goal, parent), expanded, elapsed\n            )\n        expanded += 1\n\n        moves = _ordered_moves(state, goal)\n        for move in reversed(moves):\n            next_state = state.apply(move)\n            if next_state not in visited:\n                visited.add(next_state)\n                parent[next_state] = (state, move)\n                stack.append(next_state)\n\n    return SearchResult(\"no_solution\", (), expanded, perf_counter() - started)\n\n\ndef _build_plan(start, goal, parent) -> tuple[Move, ...]:\n    moves = []\n    state = goal\n    while state != start:\n        state, move = parent[state]\n        moves.append(move)\n    return tuple(reversed(moves))\n\n\ndef _ordered_moves(state: BlockWorldState, goal: BlockWorldState) -> list[Move]:\n\n    settled = set()\n    changed = True\n    while changed:\n        changed = False\n        for block in range(1, state.size + 1):\n            support = state.support_of(block)\n            if (\n                block not in settled\n                and support == goal.support_of(block)\n                and (support == 0 or support in settled)\n            ):\n                settled.add(block)\n                changed = True\n\n    def priority(move: Move):\n        block, target = move\n        reaches_goal = target == goal.support_of(block)\n        target_ready = target == 0 or target in settled\n        if reaches_goal and target_ready and block not in settled:\n            return 0, block, target\n        if target == 0 and block not in settled:\n            return 1, block, target\n        if block not in settled:\n            return 2, block, target\n        return 3, block, target\n\n    return sorted(state.legal_moves(), key=priority)\n","state.py":"from dataclasses import dataclass\n\n\nMove = tuple[int, int]\n\n\n@dataclass(frozen=True)\nclass BlockWorldState:\n    supports: tuple[int, ...]\n\n    def __post_init__(self):\n        self._validate()\n\n    @property\n    def size(self) -> int:\n        return len(self.supports)\n\n    def support_of(self, block: int) -> int:\n        if not 1 \u003c= block \u003c= self.size:\n            raise ValueError(f\"Klocek {block} nie istnieje.\")\n        return self.supports[block - 1]\n\n    def clear_blocks(self) -> set[int]:\n        occupied = {support for support in self.supports if support != 0}\n        return set(range(1, self.size + 1)) - occupied\n\n    def legal_moves(self) -> list[Move]:\n        clear = sorted(self.clear_blocks())\n        moves = []\n        for block in clear:\n            if self.support_of(block) != 0:\n                moves.append((block, 0))\n            else:\n                moves.extend((block, target) for target in clear if target != block)\n        return moves\n\n    def apply(self, move: Move) -> \"BlockWorldState\":\n        block, target = move\n        current_support = self.support_of(block)\n\n        if not 0 \u003c= target \u003c= self.size:\n            raise ValueError(f\"Podłoże {target} nie istnieje.\")\n        if target == block:\n            raise ValueError(\"Nie można położyć klocka na nim samym.\")\n        if block not in self.clear_blocks():\n            raise ValueError(f\"Klocek {block} nie jest wolny.\")\n\n        if target == 0:\n            if current_support == 0:\n                raise ValueError(f\"Klocek {block} już leży na stole.\")\n        else:\n            if current_support != 0:\n                raise ValueError(\n                    \"W wariancie podstawowym na inny klocek przenosimy tylko ze stołu.\"\n                )\n            if target not in self.clear_blocks():\n                raise ValueError(f\"Klocek docelowy {target} nie jest wolny.\")\n\n        supports = list(self.supports)\n        supports[block - 1] = target\n        return BlockWorldState(tuple(supports))\n\n    def to_line(self) -> str:\n        return \" \".join(map(str, self.supports))\n\n    def _validate(self):\n        for block, support in enumerate(self.supports, 1):\n            if not 0 \u003c= support \u003c= self.size:\n                raise ValueError(f\"Klocek {block} leży na nieistniejącym podłożu.\")\n            if block == support:\n                raise ValueError(f\"Klocek {block} leży na samym sobie.\")\n\n        supports = [support for support in self.supports if support != 0]\n        if len(supports) != len(set(supports)):\n            raise ValueError(\"Dwa klocki leżą bezpośrednio na tym samym klocku.\")\n\n        for start in range(1, self.size + 1):\n            visited = set()\n            block = start\n            while block != 0:\n                if block in visited:\n                    raise ValueError(\"Układ zawiera cykl.\")\n                visited.add(block)\n                block = self.supports[block - 1]\n","main.py":"import sys\n\nfrom .dfs import solve_dfs\nfrom .input_reader import read_problem\nfrom .verifier import verify_plan\n\n\nINPUT_FILE = \"examples/example.txt\"\n\n\ndef main():\n    input_file = sys.argv[1] if len(sys.argv) > 1 else INPUT_FILE\n\n    try:\n        start_state, goal_state = read_problem(input_file)\n    except (OSError, ValueError) as error:\n        print(\"Błąd danych wejściowych:\", error)\n        return\n\n    print(\"Stan początkowy:\", start_state.supports)\n    print(\"Stan docelowy:  \", goal_state.supports)\n\n    result = solve_dfs(start_state, goal_state)\n\n    if result.solved:\n        print(\"\\nZnalezione ruchy:\")\n        for number, move in enumerate(result.moves, start=1):\n            print(f\"{number}. {move}\")\n\n        valid, message = verify_plan(start_state, goal_state, result.moves)\n        print(\"\\nWeryfikacja:\", message)\n    else:\n        print(\"Nie znaleziono rozwiązania:\", result.status)\n\n\nif __name__ == \"__main__\":\n    main()\n"}</script>
+<script>
+(() => {
+  'use strict';
+  const root=document.getElementById('bw-dfs-explainer');
+  const query=selector=>root.querySelector(selector);
+  const sources=JSON.parse(document.getElementById('bw-dfs-source').textContent);
+  const start=[0,1,0,2,3], goal=[2,3,4,5,0];
+  const key=state=>state.join(' ');
+  const tuple=value=>value?`(${value.join(', ')})`:'—';
+  const same=(a,b)=>key(a)===key(b);
+  const escape=value=>String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+  const range=(first,last=first)=>Array.from({length:last-first+1},(_,i)=>first+i);
+  const frame=(name,file,line)=>({name,file,line});
+  const mainLine=sources['main.py'].split(/\r?\n/).findIndex(line=>line.includes('result = solve_dfs('))+1;
+  const mainFrame=frame('main()','main.py',mainLine);
+  // Snapshots mirror the Python search order and its visited-at-push rule.
+  function makeTrace() {
+    let stack=[start.slice()],visited=new Set([key(start)]),parent=new Map(),expanded=0;
+    let state=null,moves=null,move=null,nextState=null,iteration=0,plan=[],planState=null,planMove=null;
+    const trace=[];
+    const solverFrame=line=>frame('solve_dfs()','dfs.py',line);
+    function emit(action,detail,file,lines,options={}) {
+      trace.push({action,detail,file,lines,iteration,expanded,state:state?.slice()??null,
+        stack:stack.map(s=>s.slice()),visited:[...visited],parent:[...parent].map(([child,value])=>[child,{state:value.state.slice(),move:value.move.slice()}]),
+        moves:moves?.map(m=>m.slice())??null,move:move?.slice()??null,nextState:nextState?.slice()??null,
+        plan:plan.map(m=>m.slice()),planState:planState?.slice()??null,planMove:planMove?.slice()??null,
+        calls:options.calls??[mainFrame,solverFrame(lines[0])],scope:options.scope??'solve_dfs()',locals:options.locals??[],
+        candidate:options.candidate??false,candidateStatus:options.candidateStatus??'',changed:options.changed??[],
+        checkpoint:options.checkpoint??false,building:options.building??false,done:options.done??false,movedBlock:options.movedBlock??null});
+    }
+    emit('Inicjalizacja','Stan startowy trafia na stack i do visited. parent jest pusty, expanded = 0.','dfs.py',range(25,29),{changed:['stack','visited','parent','expanded'],checkpoint:true});
+    while(stack.length) {
+      iteration++;
+      emit('Początek iteracji','Stos nie jest pusty. Program sprawdza limit czasu i limit węzłów; dla tego przykładu oba pozwalają kontynuować.','dfs.py',[31,32,33,35]);
+      state=stack.pop();
+      emit('Zdjęcie stanu ze stosu',`state = stack.pop() → ${key(state)}. Stos ma teraz ${stack.length} elementów.`,'dfs.py',[38],{changed:['state','stack'],movedBlock:parent.get(key(state))?.move[0]});
+      const isGoal=same(state,goal);
+      emit('Sprawdzenie celu',isGoal?'state == goal → True. Cel został zdjęty ze stosu; nie zwiększamy expanded.':'state == goal → False. Teraz rozwiną się następniki tego stanu.','dfs.py',[39]);
+      if(isGoal) {
+        const buildCalls=line=>[mainFrame,solverFrame(41),frame('_build_plan()','dfs.py',line)];
+        plan=[];planState=goal.slice();
+        emit('Odtwarzanie planu','Wywołanie _build_plan(start, goal, parent). Cofamy się od celu po zapisanych poprzednikach.','dfs.py',[57,58],{calls:buildCalls(58),scope:'_build_plan()',building:true});
+        while(!same(planState,start)) {
+          const child=key(planState),link=parent.get(child);
+          planState=link.state.slice();planMove=link.move.slice();
+          emit('Odczyt poprzednika',`parent[${child}] prowadzi do ${key(planState)} z ruchem ${tuple(planMove)}.`,'dfs.py',[59,60],{calls:buildCalls(60),scope:'_build_plan()',building:true});
+          plan.push(planMove.slice());
+          emit('Zapis ruchu od końca',`Dopisujemy ${tuple(planMove)} do lokalnego moves. Lista powstaje od celu do startu.`,'dfs.py',[61],{calls:buildCalls(61),scope:'_build_plan()',building:true});
+        }
+        plan.reverse();
+        emit('Odwrócenie planu','tuple(reversed(moves)) zwraca ruchy w kolejności wykonania: od startu do celu.','dfs.py',[62],{calls:buildCalls(62),scope:'_build_plan()',building:true});
+        emit('Zwrócenie wyniku',`SearchResult: solved, ${plan.length} ruchów, ${expanded} rozwiniętych węzłów. Niewykorzystane stany pozostają na stosie.`,'dfs.py',range(40,42),{building:true});
+        emit('Cel znaleziony',`main() odbiera result: ${plan.length} ruchów, expanded_nodes = ${expanded}. Wyszukiwanie jest zakończone.`,'main.py',[mainLine],{calls:[mainFrame],scope:'main()',locals:[['result.status','solved'],['liczba ruchów',plan.length],['expanded_nodes',expanded]],done:true,building:true,checkpoint:true});
+        return trace;
+      }
+      expanded++;
+      emit('Rozwinięcie węzła',`expanded += 1 → ${expanded}. Licznik rośnie tylko dla stanu, który nie jest celem.`,'dfs.py',[43],{changed:['expanded']});
+      const settled=new Set();let changed=true;
+      while(changed) {changed=false;state.forEach((support,index)=>{const block=index+1;if(!settled.has(block)&&support===goal[index]&&(support===0||settled.has(support))){settled.add(block);changed=true}})}
+      const orderedCalls=line=>[mainFrame,solverFrame(45),frame('_ordered_moves()','dfs.py',line)];
+      const settledText=settled.size?`{${[...settled].join(', ')}}`:'set()';
+      emit('Ustalenie poprawnie ułożonych klocków',`settled = ${settledText}. Klocek musi leżeć na docelowym, również ustalonym podłożu.`,'dfs.py',range(67,79),{calls:orderedCalls(69),scope:'_ordered_moves()',locals:[['settled',settledText],['changed','False']]});
+      const clear=state.map((_,i)=>i+1).filter(block=>!state.includes(block)),legal=[];
+      const legalCalls=line=>[...orderedCalls(93),frame('legal_moves()','state.py',line)];
+      emit('Znalezienie wolnych klocków',`clear_blocks() → {${clear.join(', ')}}. Na tych klockach nic nie stoi.`,'state.py',[24,25],{calls:[...legalCalls(28),frame('clear_blocks()','state.py',25)],scope:'clear_blocks()',locals:[['wolne klocki',`{${clear.join(', ')}}`]]});
+      clear.forEach(block=>{if(state[block-1]!==0)legal.push([block,0]);else clear.filter(target=>target!==block).forEach(target=>legal.push([block,target]))});
+      emit('Wygenerowanie legalnych ruchów',`${legal.length} ruchów. Z wieży zdejmujemy wolny klocek na stół; ze stołu można położyć go na innym wolnym klocku.`,'state.py',range(28,35),{calls:legalCalls(35),scope:'legal_moves()',locals:[['clear',`[${clear.join(', ')}]`],['moves',legal.map(tuple).join(', ')]]});
+      const ranked=legal.map(candidate=>{
+        const [block,target]=candidate,reachesGoal=target===goal[block-1],targetReady=target===0||settled.has(target);
+        const rank=reachesGoal&&targetReady&&!settled.has(block)?0:target===0&&!settled.has(block)?1:!settled.has(block)?2:3;
+        const returnLine=[86,88,90,91][rank];
+        emit('Ocena priorytetu ruchu',`priority(${tuple(candidate)}) → (${rank}, ${block}, ${target}). Mniejszy priorytet oznacza wcześniejsze rozpatrzenie.`,'dfs.py',[82,83,84,85,...(rank>0?[87]:[]),...(rank>1?[89]:[]),returnLine],{calls:[...orderedCalls(93),frame('priority()','dfs.py',returnLine)],scope:'priority()',locals:[['move',tuple(candidate)],['reaches_goal',reachesGoal?'True':'False'],['target_ready',targetReady?'True':'False'],['priorytet',`(${rank}, ${block}, ${target})`]]});
+        return {move:candidate,rank};
+      });
+      ranked.sort((a,b)=>a.rank-b.rank||a.move[0]-b.move[0]||a.move[1]-b.move[1]);
+      const ordered=ranked.map(item=>item.move);
+      emit('Posortowanie ruchów',`sorted(..., key=priority) → ${ordered.map(tuple).join(', ')}.`,'dfs.py',[93],{calls:orderedCalls(93),scope:'_ordered_moves()',locals:[['wynik',ordered.map(tuple).join(', ')]]});
+      moves=ordered;
+      emit('Powrót do solve_dfs','moves otrzymuje posortowaną listę. reversed(moves) sprawi, że najlepszy następnik trafi na wierzchołek stosu.','dfs.py',[45],{changed:['moves']});
+      for(const candidate of moves.slice().reverse()) {
+        move=candidate.slice();
+        emit('Kolejny ruch w odwróconej kolejności',`move = ${tuple(move)}. Słabsze ruchy dodajemy najpierw, ponieważ stos działa według LIFO.`,'dfs.py',[46],{changed:['move']});
+        const applyCalls=line=>[mainFrame,solverFrame(47),frame('apply()','state.py',line)];
+        emit('Zastosowanie ruchu',`apply(${tuple(move)}) sprawdza poprawność ruchu. Oryginalny state pozostaje bez zmian.`,'state.py',[38,39,41,43,45,48,...(move[1]===0?[49]:[52,56])],{calls:applyCalls(38),scope:'apply()',locals:[['block',move[0]],['target',move[1]],['current_support',state[move[0]-1]]]});
+        const successor=state.slice();successor[move[0]-1]=move[1];
+        emit('Utworzenie nowego układu',`Kopia supports otrzymuje supports[${move[0]-1}] = ${move[1]}. apply() zwraca nowy BlockWorldState.`,'state.py',[59,60,61],{calls:applyCalls(61),scope:'apply()',locals:[['supports',`[${successor.join(', ')}]`]]});
+        nextState=successor;
+        emit('Powrót z apply',`next_state = ${key(nextState)}. To kandydat; state nadal wynosi ${key(state)}.`,'dfs.py',[47],{candidate:true,changed:['next_state']});
+        const isNew=!visited.has(key(nextState));
+        emit('Sprawdzenie visited',isNew?'next_state not in visited → True. Ten stan nie został jeszcze odkryty.':'next_state not in visited → False. Pomijamy już odkryty stan; nie trafi ponownie na stos.','dfs.py',[48],{candidate:true,candidateStatus:isNew?'Nowy stan':'Już w visited · pomijamy'});
+        if(isNew) {
+          visited.add(key(nextState));
+          emit('Oznaczenie stanu jako odkrytego',`visited.add(next_state). len(visited) = ${visited.size}; stan oznaczamy już przed jego rozwinięciem.`,'dfs.py',[49],{candidate:true,changed:['visited']});
+          parent.set(key(nextState),{state:state.slice(),move:move.slice()});
+          emit('Zapis poprzednika',`parent[${key(nextState)}] = (${key(state)}, ${tuple(move)}). Ta relacja posłuży do odtworzenia planu.`,'dfs.py',[50],{candidate:true,changed:['parent']});
+          stack.push(nextState.slice());
+          emit('Dodanie na stos DFS',`${key(nextState)} trafia na wierzchołek. stack ma ${stack.length} elementów.`,'dfs.py',[51],{candidate:true,candidateStatus:'Dodany na stos',changed:['stack']});
+        }
+      }
+      emit('Koniec iteracji '+iteration,`Rozwinięto stan ${key(state)}. expanded = ${expanded}, len(visited) = ${visited.size}, len(stack) = ${stack.length}. Następne pop() wybierze wierzchołek stosu.`,'dfs.py',[46],{checkpoint:true});
+      if(iteration>1000)throw new Error('Przekroczono limit wizualizacji.');
+    }
+    throw new Error('Przykład nie dotarł do celu.');
+  }
+  const trace=makeTrace(),checkpoints=trace.map((item,index)=>item.checkpoint?index:-1).filter(index=>index>=0);
+  let step=0,manual=null,displayedFile=null,timer=null,mode='iteration';
+  try {const saved=window.openai?.widgetState?.privateContent;if(Number.isInteger(saved?.step))step=saved.version===2?Math.max(0,Math.min(trace.length-1,saved.step)):(checkpoints[Math.max(0,Math.min(checkpoints.length-1,saved.step))]??0);if(saved?.mode==='operation')mode='operation'}catch{}
+  query('[data-mode]').value=mode;
+  const blockColor=block=>`var(--bw-block-${block})`;
+  query('[data-legend]').innerHTML=start.map((_,i)=>`<span><i class="bw-swatch" style="background:${blockColor(i+1)}" aria-hidden="true"></i>Klocek ${i+1}</span>`).join('');
+  function drawWorld(svg,current,preview=false,movedBlock=null) {
+    const width=Math.max(120,svg.getBoundingClientRect().width),height=preview?150:parseFloat(getComputedStyle(svg).height);
+    svg.setAttribute('viewBox',`0 0 ${width} ${height}`);
+    const towers=[];
+    current.forEach((support,index)=>{if(support!==0)return;const tower=[index+1];let upper;while((upper=current.indexOf(tower[tower.length-1])+1))tower.push(upper);towers.push(tower)});
+    const slot=(width-16)/towers.length,blockWidth=Math.min(preview?39:70,slot-9),blockHeight=preview?20:36,pitch=preview?23:40,baseline=height-27;
+    let markup=`<title>${preview?'Kandydat':'Rozpatrywany układ'}: ${key(current)}</title><desc>${current.map((support,i)=>`Klocek ${i+1} ${support===0?'na stole':`na klocku ${support}`}`).join('. ')}.</desc><line x1="5" y1="${baseline}" x2="${width-5}" y2="${baseline}" stroke="var(--bw-line)" stroke-width="2"/>`;
+    towers.forEach((tower,towerIndex)=>{const x=8+slot*(towerIndex+.5);tower.forEach((block,level)=>{const y=baseline-5-blockHeight-level*pitch;markup+=`<g${block===movedBlock?' class="bw-moved"':''}><rect class="bw-block-rect" x="${x-blockWidth/2}" y="${y}" width="${blockWidth}" height="${blockHeight}" rx="5" fill="${blockColor(block)}"/><text class="bw-block-label" x="${x}" y="${y+blockHeight/2}" dy=".35em" text-anchor="middle" font-size="${preview?12:17}">${block}</text></g>`})});
+    svg.innerHTML=markup+`<text x="${width-6}" y="${height-7}" text-anchor="end" font-size="11">stół · 0</text>`;
+  }
+  function highlight(line) {
+    return line.split(/("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|#.*$|\b(?:def|class|return|if|else|for|in|not|and|or|while|from|import|True|False|None|try|except|raise)\b)/g).map(token=>{
+      const css=/^#/.test(token)?'bw-comment':/^['"]/.test(token)?'bw-string':/^(def|class|return|if|else|for|in|not|and|or|while|from|import|True|False|None|try|except|raise)$/.test(token)?'bw-keyword':'';
+      return css?`<span class="${css}">${escape(token)}</span>`:escape(token);
+    }).join('');
+  }
+  function renderCode(item) {
+    const view=manual??{file:item.file,lines:item.lines,name:item.scope};
+    if(displayedFile!==view.file){query('[data-code]').innerHTML=sources[view.file].split(/\r?\n/).map((line,i)=>`<span class="bw-code-line" data-line="${i+1}"><span class="bw-line-number" aria-hidden="true">${i+1}</span><span class="bw-line-content">${highlight(line)||' '}</span></span>`).join('');displayedFile=view.file}
+    root.querySelectorAll('.bw-code-line.is-active').forEach(line=>line.classList.remove('is-active'));
+    view.lines.forEach(number=>query(`[data-line="${number}"]`)?.classList.add('is-active'));
+    root.querySelectorAll('[data-file]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.file===view.file)));
+    query('[data-location]').textContent=view.file+(view.lines.length?':'+view.lines[0]+(view.lines.length>1?'–'+view.lines.at(-1):''):'');
+    query('[data-function]').textContent=view.name;query('[data-follow]').hidden=manual===null;
+    const scroller=query('[data-code-scroll]'),first=view.lines.length?query(`[data-line="${view.lines[0]}"]`):null;
+    if(first){const offset=first.getBoundingClientRect().top-scroller.getBoundingClientRect().top+scroller.scrollTop;scroller.scrollTop=Math.max(0,offset-scroller.clientHeight*.26)}
+  }
+  const variableRows=(rows,changed=[])=>rows.map(([name,value])=>`<div class="bw-var${changed.includes(name)?' is-changed':''}"><dt><code>${escape(name)}</code></dt><dd><code>${escape(value)}</code></dd></div>`).join('');
+  const currentPositions=()=>mode==='iteration'?checkpoints:trace.map((_,index)=>index);
+  function render() {
+    const item=trace[step],world=item.state??start,positions=currentPositions(),position=Math.max(0,positions.findLastIndex(index=>index<=step));
+    query('[data-progress]').max=positions.length-1;query('[data-progress]').value=position;
+    query('[data-step]').textContent=mode==='iteration'?`Etap ${position+1} / ${positions.length}`:`Operacja ${step+1} / ${trace.length}`;
+    query('[data-iteration]').textContent=`Iteracja ${item.iteration}`;query('[data-action]').textContent=item.action;query('[data-detail]').textContent=item.detail;
+    query('[data-status]').textContent=item.done?'✓ Cel znaleziony':item.building?'Odtwarzanie planu':step===0?'Gotowe do przejścia':'Wyszukiwanie';
+    query('[data-state]').textContent=key(world);query('[data-world-label]').textContent=item.state?'state · aktualnie przetwarzany':'start · przed pierwszym pop()';
+    const from=item.state?item.parent.find(([child])=>child===key(item.state))?.[1]:null;
+    query('[data-move-label]').textContent=from?`Ruch wejściowy ${tuple(from.move)}`:'';drawWorld(query('[data-world]'),world,false,item.movedBlock);
+    query('[data-supports]').innerHTML=world.map((support,i)=>`<div class="bw-support"><strong style="background:${blockColor(i+1)}">${i+1}</strong><span>${support===0?'stół (0)':'klocek '+support}</span></div>`).join('');
+    query('[data-candidate]').hidden=!item.candidate;
+    if(item.candidate){query('[data-next-state]').textContent=key(item.nextState);query('[data-candidate-status]').textContent=item.candidateStatus||`ruch ${tuple(item.move)}`;drawWorld(query('[data-preview]'),item.nextState,true,item.move?.[0])}
+    query('[data-vars-scope]').textContent=item.done?'solve_dfs · zapis końcowy':'solve_dfs';
+    query('[data-vars]').innerHTML=variableRows([['state',tuple(item.state)],['move',tuple(item.move)],['next_state',tuple(item.nextState)],['expanded',item.expanded],['visited',`${item.visited.length} stanów`],['parent',`${item.parent.length} powiązań`],['stack',`${item.stack.length} stanów`],['moves',item.moves?item.moves.map(tuple).join(', '):'—']],item.changed);
+    let locals=item.locals;
+    if(item.scope==='_build_plan()'){const collected=item.lines.includes(62)?item.plan.slice().reverse():item.plan;locals=[['state',tuple(item.planState)],['move',tuple(item.planMove)],['moves',collected.length?collected.map(tuple).join(', '):'[]']]}
+    query('[data-locals]').innerHTML=locals.length?`<h3 class="bw-locals-heading">Lokalne w ${escape(item.scope)}</h3><dl class="bw-variables">${variableRows(locals)}</dl>`:'';
+    query('[data-collections]').innerHTML=`<div class="bw-collection"><h3>visited · ${item.visited.length}</h3>${item.visited.map(s=>`<div><code>${escape(s)}</code></div>`).join('')}<h3>parent · ${item.parent.length}</h3>${item.parent.length?item.parent.map(([child,value])=>`<div class="bw-parent-row"><code>${escape(child)} ← ${escape(key(value.state))}<br>ruch ${escape(tuple(value.move))}</code></div>`).join(''):'Brak powiązań.'}</div>`;
+    query('[data-stack-count]').textContent=`len(stack) = ${item.stack.length}`;
+    query('[data-stack-note]').textContent=item.done?'Wyszukiwanie zakończone. Pozostałe stany nie będą już odwiedzane. Wierzchołek jest u góry.':'Stany oczekujące na odwiedzenie. Wierzchołek u góry; pop() zdejmie pierwszy wiersz.';
+    query('[data-stack]').innerHTML=item.stack.slice().reverse().map((s,index)=>`<li><code>${key(s)}</code><span class="bw-stack-tag">${index===0?(item.done?'← wierzchołek':'← następny'):`[${item.stack.length-index-1}]`}</span></li>`).join('');query('[data-stack-empty]').hidden=item.stack.length!==0;
+    query('[data-call-count]').textContent=`Liczba ramek: ${item.calls.length}`;
+    query('[data-calls]').innerHTML=item.calls.slice().reverse().map((call,index)=>`<li><button type="button" class="bw-frame" data-frame="${item.calls.length-index-1}"><code>${escape(call.name)}</code><span>${escape(call.file)}:${call.line}${index===0?' · aktywna':''}</span></button></li>`).join('');
+    query('[data-plan-section]').hidden=!item.building;query('[data-plan-direction]').textContent=item.done||item.lines.includes(62)||item.action==='Zwrócenie wyniku'?'Od startu do celu':'Od celu do startu · przed reversed()';
+    query('[data-plan]').innerHTML=item.plan.map(([block,target])=>`<li><i class="bw-swatch" style="background:${blockColor(block)}" aria-hidden="true"></i><code>(${block}, ${target})</code><span>${target===0?'na stół':'na klocek '+target}</span></li>`).join('')||'<li>Plan jest jeszcze pusty.</li>';
+    query('[data-prev]').disabled=step===0;query('[data-reset]').disabled=step===0;query('[data-next]').disabled=step===trace.length-1;
+    renderCode(item);root.dataset.traceStep=step;root.dataset.traceLength=trace.length;
+  }
+  function save(){try{window.openai?.setWidgetState?.({modelContent:{problem:'Blocks World: DFS',step,state:trace[step].state,expanded:trace[step].expanded},privateContent:{step,mode,version:2}})?.catch?.(()=>{})}catch{}}
+  function stop(){clearInterval(timer);timer=null;query('[data-play]').textContent='▶ Odtwarzaj';query('[data-play]').setAttribute('aria-pressed','false')}
+  function go(index){step=Math.max(0,Math.min(trace.length-1,index));manual=null;render();save();if(step===trace.length-1)stop()}
+  function advance(direction){const positions=currentPositions(),target=direction>0?positions.find(index=>index>step):positions.findLast(index=>index<step);go(target??(direction>0?trace.length-1:0))}
+  query('[data-prev]').addEventListener('click',()=>{stop();advance(-1)});query('[data-next]').addEventListener('click',()=>{stop();advance(1)});
+  query('[data-reset]').addEventListener('click',()=>{stop();go(0)});query('[data-end]').addEventListener('click',()=>{stop();go(trace.length-1)});
+  query('[data-progress]').addEventListener('input',event=>{stop();go(currentPositions()[Number(event.target.value)])});
+  query('[data-mode]').addEventListener('change',event=>{stop();mode=event.target.value;manual=null;render();save()});
+  query('[data-play]').addEventListener('click',()=>{if(timer){stop();return}if(step===trace.length-1)go(0);query('[data-play]').textContent='Ⅱ Pauza';query('[data-play]').setAttribute('aria-pressed','true');timer=setInterval(()=>advance(1),mode==='iteration'?1600:1200)});
+  root.addEventListener('click',event=>{const file=event.target.closest('[data-file]'),selectedFrame=event.target.closest('[data-frame]');if(file){stop();manual={file:file.dataset.file,lines:[],name:'Podgląd pliku · następny krok wraca do kodu'};renderCode(trace[step])}if(selectedFrame){stop();const call=trace[step].calls[Number(selectedFrame.dataset.frame)];manual={file:call.file,lines:[call.line],name:call.name};renderCode(trace[step])}});
+  query('[data-follow]').addEventListener('click',()=>{manual=null;renderCode(trace[step])});
+  root.addEventListener('keydown',event=>{if(event.ctrlKey||event.altKey||event.metaKey||/^(INPUT|SELECT|TEXTAREA)$/.test(event.target.tagName))return;if(event.key==='ArrowRight'||event.key==='ArrowLeft'){event.preventDefault();stop();advance(event.key==='ArrowRight'?1:-1)}});
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)stop()});
+  window.addEventListener('openai:set_globals',event=>{const saved=event.detail?.globals?.widgetState?.privateContent;if(Number.isInteger(saved?.step)){stop();if(saved.mode==='operation'||saved.mode==='iteration'){mode=saved.mode;query('[data-mode]').value=mode}step=Math.max(0,Math.min(trace.length-1,saved.step));manual=null;render()}});
+  new ResizeObserver(()=>{const item=trace[step];drawWorld(query('[data-world]'),item.state??start);if(item.candidate)drawWorld(query('[data-preview]'),item.nextState,true);renderCode(item)}).observe(query('[data-world]'));
+  render();
+})();
+</script>
