@@ -1,0 +1,238 @@
+CLINGO — CZYM JEST I JAK DZIAŁA W PROJEKCIE WUMPUS WORLD
+
+1. Czym jest clingo?
+
+Clingo jest narzędziem do programowania logicznego w podejściu ASP
+(Answer Set Programming — programowanie zbiorów odpowiedzi).
+W ASP opisujemy fakty, reguły i ograniczenia, a solver szuka modeli
+stabilnych, czyli zbiorów odpowiedzi zgodnych z semantyką programu.
+Jest to podejście deklaratywne: opisujemy warunki rozwiązania.
+
+Clingo łączy dwa elementy:
+- gringo — grounder, który przekształca reguły ze zmiennymi w program
+  bez zmiennych, uwzględniając dziedziny wynikające z programu;
+- clasp — solver, który szuka modeli stabilnych takiego programu.
+
+Przykładowo reguła dotycząca pól (X,Y) zostaje podczas ugruntowania
+przełożona na konkretne przypadki dla współrzędnych planszy.
+Źródło: oficjalny opis clingo — https://potassco.org/clingo/
+
+2. Po co clingo w świecie Wumpusa?
+
+Agent nie zna rozmieszczenia jam ani wumpusów. Zna rozmiar planszy,
+liczbę wumpusów, odwiedzone pola oraz odebrane sygnały:
+- breeze — powiew: na sąsiednim polu jest jama;
+- stench — smród: na sąsiednim polu jest wumpus;
+- scream — krzyk po strzale: strzała zabiła wumpusa.
+
+Sąsiedztwo oznacza pola w pionie i poziomie, bez przekątnych.
+W tym projekcie także martwy wumpus wydziela smród.
+
+Clingo rozpatruje możliwe rozmieszczenia zagrożeń i odrzuca te, które
+przeczą obserwacjom. Jeden model reprezentuje jeden dopuszczalny wariant
+ukrytej części świata. Porównanie modeli pozwala ustalić, co jest pewne,
+a co pozostaje jedynie możliwe.
+
+3. Podział zadań między pliki
+
+world.py
+Przechowuje prawdziwy świat, wykonuje akcje i oblicza percepcje.
+
+agent.py
+Zapisuje obserwacje, pyta bazę wiedzy o wnioski, wybiera cel i planuje
+ruchy. Funkcja plan_route() używa BFS do znalezienia najkrótszego ciągu
+akcji: obrotów i kroków naprzód.
+
+inference.py
+Zawiera KnowledgeBase, zamienia obserwacje na fakty ASP, uruchamia clingo
+i przekształca odpowiedzi w obiekt Inference dostępny dla agenta.
+
+wumpus_kb.lp
+Zawiera program logiczny: geometrię planszy, możliwe zagrożenia,
+ograniczenia wynikające z percepcji, obsługę strzałów i reguły bezpieczeństwa.
+
+simulate.py
+Łączy środowisko z agentem w pętli gry i wyświetla przebieg oraz wynik.
+
+4. Jak czytać program wumpus_kb.lp?
+
+Fakt — informacja uznana za prawdziwą:
+
+    visited(1,1).
+    no_breeze(1,1).
+
+Agent odwiedził pole (1,1) i nie poczuł tam powiewu. Kropka kończy zapis.
+Nazwy zaczynające się wielką literą, np. X i Y, oznaczają zmienne.
+
+Reguła — wyprowadzenie nowej informacji:
+
+    near_pit(X,Y) :- adj(X,Y,A,B), pit(A,B).
+
+Czytamy: „na polu (X,Y) w pobliżu jest jama, jeżeli pole (A,B) jest
+z nim sąsiadujące i znajduje się na nim jama”. Symbol :- oznacza
+„jeżeli”, a przecinek łączy warunki spójnikiem „i”.
+
+Reguła wyboru — dopuszczenie różnych wariantów:
+
+    { pit(X,Y) } :- frontier(X,Y).
+
+Na polu pogranicza może być jama albo może jej nie być. Nie jest to
+losowanie: solver szuka wariantów zgodnych ze wszystkimi ograniczeniami.
+Pogranicze (frontier) to nieodwiedzone pola sąsiadujące z odwiedzonymi.
+
+Ograniczenie — zakaz określonej sytuacji:
+
+    :- no_breeze(X,Y), near_pit(X,Y).
+
+Odrzucamy każdy model, w którym obok pola bez powiewu znajduje się jama.
+Ograniczenie zaczyna się od :- i nie ma części po lewej stronie.
+
+    :- breeze(X,Y), not near_pit(X,Y).
+
+Odrzucamy także model, w którym agent czuł powiew, ale nie ma obok jamy.
+Sam powiew nie wskazuje jeszcze, na którym sąsiednim polu jest jama.
+
+Negacja domyślna — not:
+
+    alive(X,Y) :- wumpus(X,Y), not dead(X,Y).
+
+W danym modelu wumpus jest żywy, jeśli jest na tym polu i nie wyprowadzono
+jego śmierci. Słowo not oznacza negację domyślną. To coś innego niż
+no_breeze(X,Y), które jest osobnym predykatem opisującym zaobserwowany
+brak powiewu. Brak zapisanej obserwacji breeze nie oznacza no_breeze.
+
+Ograniczenie liczności:
+
+    K { wumpus(X,Y) : cell(X,Y), not start(X,Y) } K :- wumpus_count(K).
+
+Dokładnie K pól poza wejściem musi zawierać wumpusa.
+
+Wybór wyświetlanych predykatów:
+
+    #show safe/2.
+
+Udostępnia w wyniku predykat safe z dwoma argumentami. Nie zmienia reguł
+rozumowania; steruje tym, co odczyta Python przez symbols(shown=True).
+
+5. Jak Python uruchamia clingo?
+
+KnowledgeBase.tell_percept() zapisuje odwiedzone pole oraz obecność
+lub brak powiewu i smrodu. tell_shot() zapisuje strzał oraz jego wynik.
+Metoda facts() tworzy tekst, np.:
+
+    size(4,4).
+    wumpus_count(1).
+    visited(1,1).
+    no_breeze(1,1).
+    no_stench(1,1).
+
+Następnie _ground() wykonuje:
+
+    ctl = clingo.Control(["--models=0"])
+    ctl.load(str(PROGRAM_PATH))
+    ctl.add("base", [], self.facts())
+    ctl.ground([("base", [])])
+
+Znaczenie kolejnych instrukcji:
+1) Utworzenie obiektu sterującego clingo. --models=0 znosi limit modeli.
+2) Wczytanie reguł z wumpus_kb.lp.
+3) Dodanie aktualnych faktów do części programu o nazwie base.
+4) Ugruntowanie połączonego programu, czyli przygotowanie go do rozwiązania.
+
+Metoda infer() rozwiązuje ten program dwukrotnie: w trybie cautious
+i brave. Funkcja _consequences() ustawia enum_mode i odczytuje symbole
+przez solve(yield_=True). W tych trybach zachowuje ostatni zgłoszony
+zbiór konsekwencji, bo wcześniejsze wyniki mogą być jeszcze niepełne.
+Wynik trafia do obiektu Inference jako zbiory współrzędnych.
+
+Każde wywołanie infer() tworzy nowy obiekt Control i ponownie ugruntowuje
+aktualną bazę. W ramach jednego infer() ugruntowanie jest wspólne dla obu
+trybów rozwiązywania. Jeśli nie istnieje żaden model, kod zgłasza wyjątek
+InconsistentKnowledge: obserwacji nie da się pogodzić z regułami świata.
+
+6. Najważniejsza różnica: pewność a możliwość
+
+Cautious — wnioskowanie ostrożne:
+Informacja musi być prawdziwa we WSZYSTKICH modelach.
+Przykłady: pit_certain, alive_certain i safe.
+
+Brave — wnioskowanie odważne:
+Informacja musi być prawdziwa w CO NAJMNIEJ JEDNYM modelu.
+Przykłady: pit_possible, wumpus_possible i alive_possible.
+
+„Możliwe” obejmuje także „pewne”. Jeśli jama jest we wszystkich modelach,
+to należy zarówno do pit_certain, jak i pit_possible.
+
+Przykład: agent stoi na wejściu (1,1) planszy 4x4. Czuje powiew,
+ale nie czuje smrodu. Sąsiednie pola to (1,2) i (2,1).
+Z punktu widzenia jam dopuszczalne są trzy warianty:
+- jama tylko na (1,2);
+- jama tylko na (2,1);
+- jamy na obu polach.
+
+Oba pola należą do pit_possible, ale żadne nie należy do pit_certain.
+Brak smrodu wyklucza wumpusa na obu polach, jednak żadne z nich nie jest
+na pewno bezpieczne z powodu możliwej jamy. Gdyby na wejściu nie było
+ani powiewu, ani smrodu, oba pola znalazłyby się w safe.
+
+7. Jak agent wykorzystuje wnioski?
+
+Agent zapisuje percepcję po każdej akcji, ale pyta clingo przy wyborze
+nowego celu w _decide(), a nie przy każdym ruchu. Po zebraniu całego
+znanego złota wybiera powrót bez potrzeby wnioskowania.
+
+Najpierw próbuje dotrzeć do pola ze zbioru inf.safe. Bezpieczeństwo
+oznacza tu brak jamy i brak żywego wumpusa we wszystkich modelach.
+Trasę oblicza BFS po polach odwiedzonych lub dowiedzionych jako bezpieczne.
+
+Jeżeli nie ma takiej trasy, agent może przygotować strzał. Wybiera pole
+pogranicza, na którym może być żywy wumpus, ale nie może być jamy:
+
+    targets = (inf.frontier & inf.alive_possible) - inf.pit_possible
+
+Strzela z odwiedzonego sąsiada, aby cel był pierwszym polem na torze
+strzały. Trafienie zabija tam wumpusa, a brak krzyku wyklucza jego żywą
+obecność na tym polu. W obu przypadkach pole można potem uznać za bezpieczne.
+
+Program ASP uwzględnia kolejność strzałów i fakt, że strzała zatrzymuje
+się na pierwszym żywym wumpusie. Rozróżnia położenie wumpusa (wumpus),
+jego żywą obecność (alive) oraz śmierć (dead).
+
+Jeśli nie ma bezpiecznego celu ani odpowiedniego strzału, obecna
+implementacja wraca do wejścia i opuszcza jaskinię.
+
+8. Prawdopodobieństwo i ograniczenia obecnej wersji
+
+inference.py zawiera danger_probabilities(pit_prob). Metoda wylicza
+modele i w Pythonie nadaje im wagi zależne od liczby jam na pograniczu:
+
+    waga = (pit_prob / (1 - pit_prob)) ** liczba_jam
+
+Ryzyko dla pola to suma wag modeli, w których jest tam jama lub żywy
+wumpus, podzielona przez sumę wag wszystkich modeli. Wynik zależy
+od przyjętego pit_prob. Samo brave mówi tylko „możliwe”, bez procentów.
+Pełne wyliczanie modeli może być kosztowne przy większych światach.
+
+Ważne: agent obecnie NIE wywołuje danger_probabilities(). W agent.py
+gałąź if self.risky wyznacza kandydatów, ale kończy się komentarzem
+TODO (RISKY). Flaga --risky nie realizuje więc jeszcze wyboru pola
+o najmniejszym ryzyku, mimo zapowiedzi w opisach kodu.
+
+Jamy są modelowane tylko na pograniczu. Brak pit dla dalszego pola
+nie dowodzi jego bezpieczeństwa — o jamach poza pograniczem agent
+nie ma jeszcze informacji. Położenia wumpusów rozpatrywane są na całej
+planszy poza wejściem. Program nie modeluje położenia złota; agent
+reaguje na jego blask bezpośrednio w Pythonie.
+
+DO ZAPAMIĘTANIA
+
+W tym projekcie clingo jest silnikiem wnioskowania agenta: łączy jego
+obserwacje z regułami świata i ustala, które zagrożenia są pewne,
+które możliwe oraz gdzie można bezpiecznie wejść. Agent wybiera cel
+na podstawie tych informacji, a BFS wyznacza trasę jego realizacji.
+
+Podstawa notatki: aktualny kod world.py, agent.py, inference.py,
+wumpus_kb.lp i simulate.py. Informacje o narzędziu i API sprawdzono
+w dokumentacji Potassco:
+- https://potassco.org/clingo/
+- https://docs.potassco.org/clingo/python-api/5.8/
