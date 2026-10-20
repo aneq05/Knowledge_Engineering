@@ -38,6 +38,9 @@ def run_game(
     risky: bool = False,
     agent_knows_gold: bool = True,
     verbose: bool = True,
+    *,
+    counting: bool = False,
+    pit_prob: float = 0.2,
 ) -> GameResult:
     """Rozgrywa jedną grę agenta w świecie ``config`` i zwraca jej wynik.
 
@@ -46,6 +49,8 @@ def run_game(
     z jaskini albo po ``max_actions`` akcjach.  ``agent_knows_gold`` mówi, czy
     agent zna liczbę sztuk złota; ``verbose`` włącza wypisywanie przebiegu gry
     (prawdziwego świata, kolejnych akcji i mapy wiedzy agenta przy zmianie celu).
+    ``counting=True`` włącza ryzyko oparte na zliczaniu modeli; ``pit_prob``
+    powinno odpowiadać prawdopodobieństwu jamy użytemu do generowania świata.
     """
     world = World(config)
     # Agent zna rozmiar świata, liczbę wumpusów i strzał, ale nie ich położenie.
@@ -56,6 +61,8 @@ def run_game(
         n_gold=len(config.gold) if agent_knows_gold else None,
         n_arrows=world.arrows,
         risky=risky,
+        counting=counting,
+        pit_prob=pit_prob,
     )
     t0 = time.perf_counter()
     percept = world.percept()  # percepcja na polu startowym
@@ -99,10 +106,13 @@ def main() -> None:
                     help="use the standard Russell & Norvig 4x4 world (ignores size/pits/wumpus/gold/seed)")
     ap.add_argument("--games", type=int, default=1, help="number of games to play")
     ap.add_argument("--risky", action="store_true", help="gamble when nothing is provably safe")
+    ap.add_argument("--counting", action="store_true", help="gamble using model-counting danger probabilities (implies --risky)")
     ap.add_argument("--unknown-gold", action="store_true", help="agent does not know how much gold there is")
     ap.add_argument("--max-actions", type=int, default=1000)
     ap.add_argument("--quiet", action="store_true", help="only print the summary")
     args = ap.parse_args()
+    if args.counting and not 0.0 < args.pits < 1.0:
+        ap.error("--counting requires --pits in (0, 1)")
 
     # Jeden generator na wszystkie gry: przy ustalonym --seed seria gier jest powtarzalna.
     rng = random.Random(args.seed)
@@ -122,7 +132,10 @@ def main() -> None:
         verbose = not args.quiet
         if verbose and args.games > 1:
             print(f"\n=========== game {i + 1} ===========")
-        results.append(run_game(config, args.max_actions, args.risky, not args.unknown_gold, verbose))
+        results.append(run_game(
+            config, args.max_actions, args.risky, not args.unknown_gold, verbose,
+            counting=args.counting, pit_prob=args.pits,
+        ))
 
     if args.games > 1:
         n = len(results)

@@ -15,7 +15,8 @@ Strategia (w kolejności preferencji):
    żywy wumpus -- strzał oddawany jest z sąsiedniego odwiedzonego pola, więc
    po nim pole jest na pewno bezpieczne niezależnie od tego, czy był krzyk;
 5. (tylko przy ``risky=True``) idź na najmniej podejrzane pole pogranicza,
-   które nie jest na pewno śmiertelne;
+   które nie jest na pewno śmiertelne; ``counting=True`` wybiera je na podstawie
+   prawdopodobieństw z ważonego zliczania modeli i samo włącza tryb ryzykowny;
 6. w przeciwnym razie poddaj się: wróć do wejścia i wyjdź z jaskini.
 """
 
@@ -23,6 +24,7 @@ from __future__ import annotations
 
 from collections import deque
 from collections.abc import Callable, Iterable
+from math import isclose
 
 from inference import Inference, KnowledgeBase
 from world import START, Action, Cell, Direction, Percept, in_bounds, step
@@ -89,6 +91,9 @@ class Agent:
         n_gold: int | None = 1,
         n_arrows: int | None = None,
         risky: bool = False,
+        *,
+        counting: bool = False,
+        pit_prob: float = 0.2,
     ) -> None:
         """Tworzy agenta stojącego na wejściu (1, 1) i patrzącego na wschód.
 
@@ -96,12 +101,18 @@ class Agent:
         jaskinię, dopóki zostały jakieś bezpieczne pola.  ``n_arrows=None``
         oznacza tyle strzał, ile jest wumpusów.  ``risky=True`` pozwala
         agentowi zaryzykować wejście na niepewne pole, gdy nic nie jest
-        na pewno bezpieczne.
+        na pewno bezpieczne. ``counting=True`` włącza wariant ryzykowny
+        wybierający najmniejsze prawdopodobieństwo śmierci z ważonego
+        zliczania modeli. ``pit_prob`` jest prawdopodobieństwem jamy a priori.
         """
+        if counting and not 0.0 < pit_prob < 1.0:
+            raise ValueError("pit_prob must be in (0, 1) for counting mode")
         self.width, self.height = width, height
         self.n_gold = n_gold
         self.arrows = n_wumpus if n_arrows is None else n_arrows
-        self.risky = risky
+        self.risky = risky or counting
+        self.counting = counting
+        self.pit_prob = pit_prob
         self.kb = KnowledgeBase(width, height, n_wumpus)
         self.pos: Cell = START
         self.direction = Direction.E
@@ -211,16 +222,27 @@ class Agent:
             deadly = inf.pit_certain | inf.alive_certain
             candidates = inf.frontier - deadly
             if candidates:
-                # Prefer fewer possible hazards; BFS breaks ties by route length.
-                risk = {
-                    c: int(c in inf.pit_possible) + int(c in inf.alive_possible)
-                    for c in candidates
-                }
+                if self.counting:
+                    probabilities = self.kb.danger_probabilities(self.pit_prob)
+                    risk = {c: probabilities[c] for c in candidates}
+                else:
+                    # Prefer fewer possible hazards; BFS breaks ties by route length.
+                    risk = {
+                        c: int(c in inf.pit_possible) + int(c in inf.alive_possible)
+                        for c in candidates
+                    }
                 lowest_risk = min(risk.values())
-                targets = {c for c, score in risk.items() if score == lowest_risk}
+                targets = {
+                    c for c, score in risk.items()
+                    if isclose(score, lowest_risk, rel_tol=0.0, abs_tol=1e-12)
+                }
                 route = plan_route(state, lambda c, d: c in targets, visited | targets)
                 if route is not None:
-                    self.goal = f"risk {route_target(state, route)}"
+                    target = route_target(state, route)
+                    if self.counting:
+                        self.goal = f"risk counting {target} (danger={risk[target]:.1%})"
+                    else:
+                        self.goal = f"risk {target}"
                     return route
 
         return self._go_home("nothing safe left, leave the cave")
