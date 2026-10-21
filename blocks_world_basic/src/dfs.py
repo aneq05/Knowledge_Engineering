@@ -23,10 +23,10 @@ def solve_dfs(
     time_limit_seconds: float = 10.0,
 ) -> SearchResult:
     started = perf_counter()
-    stack = [start]
-    visited = {start}
-    parent: dict[BlockWorldState, tuple[BlockWorldState, Move]] = {}
-    expanded = 0
+    stack = [start]         # stos stanów do sprawdzenia
+    visited = {start}       # zbiór odkrytych ustawień
+    parent: dict[BlockWorldState, tuple[BlockWorldState, Move]] = {}    # słownik zapisujący z jakiego stanu i jakim ruchem dotarliśmy
+    expanded = 0    # licznik stanów dla których generujemy następniki
 
     while stack:
         elapsed = perf_counter() - started
@@ -62,9 +62,10 @@ def _build_plan(start, goal, parent) -> tuple[Move, ...]:
     return tuple(reversed(moves))
 
 
+# które legalne ruchy z danego ustawienia warto sprawdzić najpierw przez DFS?
 def _ordered_moves(state: BlockWorldState, goal: BlockWorldState) -> list[Move]:
 
-    settled = set()
+    settled = set() # klocki ustawione na właściwym fundamencie
     changed = True
     while changed:
         changed = False

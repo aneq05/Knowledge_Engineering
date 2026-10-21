@@ -45,8 +45,7 @@ Testy:
 py -3 -m unittest discover -s tests -v
 ```
 
-`main.py` uruchamia wyłącznie algorytm. Raport nie jest generowany podczas
-zwykłego uruchomienia programu. DFS nie gwarantuje najkrótszej sekwencji;
+`main.py` uruchamia wyłącznie algorytm. DFS nie gwarantuje najkrótszej sekwencji;
 taki wymóg pojawia się dopiero w wariancie rozszerzonym na 6 punktów.
 
 ## Wyniki eksperymentów do ręcznego raportu

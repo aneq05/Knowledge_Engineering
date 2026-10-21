@@ -6,21 +6,21 @@ Move = tuple[int, int]
 
 @dataclass(frozen=True)
 class BlockWorldState:
-    supports: tuple[int, ...]
+    supports: tuple[int, ...]      # podłoża poszczególnych klocków
 
-    def __post_init__(self):
+    def __post_init__(self):    # automatycznie po inicjalizacji obiektu
         self._validate()
 
     @property
     def size(self) -> int:
-        return len(self.supports)
+        return len(self.supports)   # liczba klocków
 
-    def support_of(self, block: int) -> int:
+    def support_of(self, block: int) -> int:    # podłoże danego klocka
         if not 1 <= block <= self.size:
             raise ValueError(f"Klocek {block} nie istnieje.")
         return self.supports[block - 1]
 
-    def clear_blocks(self) -> set[int]:
+    def clear_blocks(self) -> set[int]: # bloczki które mają wolny wierzch
         occupied = {support for support in self.supports if support != 0}
         return set(range(1, self.size + 1)) - occupied
 
@@ -28,12 +28,15 @@ class BlockWorldState:
         clear = sorted(self.clear_blocks())
         moves = []
         for block in clear:
+            # jeśli wolny klocek stoi na innym klocku, to można go zdjąć na stół
             if self.support_of(block) != 0:
                 moves.append((block, 0))
             else:
+                # jeśli wolny klocek stoi na stole, to można go położyć na innym wolnym klocku
                 moves.extend((block, target) for target in clear if target != block)
         return moves
 
+# utworzenie aktualnego stanu po ruchu
     def apply(self, move: Move) -> "BlockWorldState":
         block, target = move
         current_support = self.support_of(block)
@@ -63,6 +66,7 @@ class BlockWorldState:
     def to_line(self) -> str:
         return " ".join(map(str, self.supports))
 
+# czy całe ustawienie jest możliwe?
     def _validate(self):
         for block, support in enumerate(self.supports, 1):
             if not 0 <= support <= self.size:
