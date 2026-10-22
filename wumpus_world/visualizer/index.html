@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Wumpus World · Laboratorium jaskini</title>
+    <link rel="stylesheet" href="/style.css" />
+    <script defer src="/app.js"></script>
+  </head>
+
+  <body>
+    <!-- Nagłówek aplikacji i dostęp do instrukcji. -->
+    <header>
+      <a class="brand" href="/">
+        W
+        <span class="brand-dot">.</span>
+        <span>
+          WUMPUS WORLD
+          <small>LABORATORIUM JASKINI</small>
+        </span>
+      </a>
+      <span class="header-note">Obserwuj. Wnioskuj. Wykonaj ruch.</span>
+      <button id="helpButton" class="quiet">
+        Jak grać
+        <span>?</span>
+      </button>
+    </header>
+
+    <main>
+      <!-- Cel wyprawy i bieżące statystyki. -->
+      <section class="title-row">
+        <div>
+          <p class="eyebrow">INTERAKTYWNA WYPRAWA / PYTHON + CLINGO</p>
+          <h1>Zajrzyj do jaskini.</h1>
+          <p class="intro">Znajdź złoto. Unikaj zagrożeń. Wróć do wejścia.</p>
+        </div>
+        <div class="stats">
+          <div>
+            <span>AKCJE</span>
+            <strong id="steps">00</strong>
+          </div>
+          <div>
+            <span>ZŁOTO</span>
+            <strong id="gold">0 / 1</strong>
+          </div>
+          <div>
+            <span>STRZAŁY</span>
+            <strong id="arrows">1</strong>
+          </div>
+          <div>
+            <span>WYNIK</span>
+            <strong id="score">0</strong>
+          </div>
+        </div>
+      </section>
+
+      <!-- Główna przestrzeń gry: plansza oraz panel wiedzy agenta. -->
+      <div class="workspace">
+        <section class="cave-section" aria-label="Plansza i sterowanie">
+          <!-- Wybór widoku planszy. -->
+          <div class="board-toolbar">
+            <div class="tabs" role="group" aria-label="Widok planszy">
+              <button id="knowledgeView" class="active" aria-pressed="true">Wiedza agenta</button>
+              <button id="truthView" aria-pressed="false">Pełna mapa</button>
+            </div>
+            <label class="check">
+              <input id="showTrail" type="checkbox" checked />
+              Ślad ruchu
+            </label>
+          </div>
+
+          <!-- Płótno gry i nakładka z wynikiem wyprawy. -->
+          <div class="board-wrap">
+            <canvas
+              id="board"
+              role="img"
+              aria-label="Plansza Wumpus World. Opis wybranego pola znajduje się poniżej."
+              tabindex="0"
+            ></canvas>
+            <div class="board-tag">
+              <span class="live-dot"></span>
+              <span id="boardMode">TYLKO TO, CO WIADOMO</span>
+            </div>
+            <div id="outcome" class="outcome" hidden>
+              <p id="outcomeLabel"></p>
+              <h2 id="outcomeTitle"></h2>
+              <p id="outcomeDetail"></p>
+              <button id="outcomeUndo">Cofnij ostatni ruch</button>
+            </div>
+          </div>
+
+          <div class="board-caption">
+            <span id="cellInfo">Kliknij pole, aby sprawdzić jego status.</span>
+            <span>START (1, 1) ↗</span>
+          </div>
+
+          <div class="legend">
+            <span>
+              <i class="legend-dot visited"></i>
+              Odwiedzone
+            </span>
+            <span>
+              <i class="legend-dot safe"></i>
+              Bezpieczne
+            </span>
+            <span>
+              <i class="legend-dot possible"></i>
+              Możliwe zagrożenie
+            </span>
+            <span>
+              <i class="legend-dot unknown"></i>
+              Nieznane
+            </span>
+          </div>
+
+          <!-- Automatyczny pokaz i wykonywanie pojedynczych akcji agenta. -->
+          <div class="playback">
+            <button id="play" class="primary">▶ Obserwuj agenta</button>
+            <button id="stepAgent">Jeden krok agenta →</button>
+            <button id="undo" class="quiet" title="Cofnij ostatnią akcję">↶ Cofnij</button>
+            <label class="speed">
+              Tempo
+              <select id="speed">
+                <option value="1500">Wolno</option>
+                <option value="850" selected>Normalnie</option>
+                <option value="380">Szybko</option>
+              </select>
+            </label>
+          </div>
+
+          <!-- Ręczne sterowanie postacią. -->
+          <div class="manual">
+            <div>
+              <h3>Twój ruch</h3>
+              <p>Strzałki: obrót i krok. G: złoto · F: strzał · E: wyjście.</p>
+            </div>
+            <div class="actions">
+              <button data-action="left" title="Strzałka w lewo">
+                ↶
+                <span>W lewo</span>
+              </button>
+              <button data-action="forward" title="Strzałka w górę">
+                ↑
+                <span>Naprzód</span>
+              </button>
+              <button data-action="right" title="Strzałka w prawo">
+                ↷
+                <span>W prawo</span>
+              </button>
+              <button data-action="grab">
+                ◇
+                <span>Podnieś</span>
+              </button>
+              <button data-action="shoot">
+                ➶
+                <span>Strzel</span>
+              </button>
+              <button data-action="climb">
+                ⇥
+                <span>Wyjdź</span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <aside>
+          <section class="perception">
+            <p class="eyebrow">01 / PERCEPCJA</p>
+            <h2>Co czuję?</h2>
+            <p class="position" id="position"></p>
+            <div id="percepts" class="percepts"></div>
+            <p class="percept-help" id="perceptHelp"></p>
+          </section>
+
+          <section class="reasoning">
+            <p class="eyebrow">02 / WNIOSKOWANIE</p>
+            <h2>Co z tego wynika?</h2>
+            <p id="reason"></p>
+            <div class="goal">
+              <span>CEL AGENTA</span>
+              <strong id="goal"></strong>
+              <small id="plan"></small>
+            </div>
+            <details>
+              <summary>Fakty przekazane do Clingo</summary>
+              <pre id="facts"></pre>
+            </details>
+          </section>
+
+          <section class="journal">
+            <p class="eyebrow">03 / DZIAŁANIE</p>
+            <h2>Dziennik wyprawy</h2>
+            <p id="message" role="status" aria-live="polite"></p>
+            <ol id="journal"></ol>
+          </section>
+        </aside>
+      </div>
+
+      <!-- Parametry stosowane przy rozpoczęciu nowej gry. -->
+      <section class="settings">
+        <div>
+          <p class="eyebrow">KOLEJNY EKSPERYMENT</p>
+          <h2>Zmień warunki wyprawy.</h2>
+        </div>
+        <label>
+          Plansza
+          <select id="scenario">
+            <option value="aima">Klasyczna AIMA · 4 × 4</option>
+            <option value="counting">Porównanie ryzyka · 4 × 4</option>
+            <option value="random">Losowa jaskinia · 4 × 4</option>
+          </select>
+        </label>
+        <label>
+          Strategia agenta
+          <select id="strategy">
+            <option value="safe">Ostrożny · tylko bezpieczne pola</option>
+            <option value="risky">Ryzykant · heurystyka</option>
+            <option value="counting">Ryzykant · zliczanie modeli</option>
+          </select>
+        </label>
+        <label class="seed">
+          Ziarno losowania
+          <input id="seed" type="number" value="7" step="1" />
+        </label>
+        <button id="newGame">Nowa wyprawa ↗</button>
+      </section>
+
+      <footer>
+        <span>world.py → percepcja → inference.py + wumpus_kb.lp → agent.py → akcja</span>
+        <span>Każda akcja −1 · strzał dodatkowo −10 · śmierć −1000 · wyniesione złoto +1000</span>
+      </footer>
+    </main>
+
+    <!-- Instrukcja gry otwierana w oknie dialogowym. -->
+    <dialog id="help">
+      <button id="closeHelp" class="close" aria-label="Zamknij">×</button>
+      <p class="eyebrow">PRZEWODNIK PO WYPRAWIE</p>
+      <h2>
+        Najpierw obserwuj.
+        <br />
+        Potem zrób krok.
+      </h2>
+      <p>
+        Jesteś na (1, 1), patrzysz na wschód. Strzałka pokazuje kierunek patrzenia. Obrót nie
+        przesuwa postaci; „Naprzód” przesuwa o jedno pole w tym kierunku.
+      </p>
+      <dl>
+        <dt>≈ Powiew</dt>
+        <dd>Na co najmniej jednym polu obok jest jama.</dd>
+        <dt>♨ Smród</dt>
+        <dd>Obok jest Wumpus. W tym projekcie martwy Wumpus też śmierdzi.</dd>
+        <dt>◇ Blask</dt>
+        <dd>Złoto leży dokładnie pod tobą. Wybierz „Podnieś”.</dd>
+        <dt>➶ Strzał</dt>
+        <dd>
+          Strzała leci prosto do ściany i zabija pierwszego żywego Wumpusa. Krzyk potwierdza
+          trafienie.
+        </dd>
+        <dt>⇥ Wyjście</dt>
+        <dd>
+          Wróć ze złotem na (1, 1) i wybierz „Wyjdź”. Dopiero wtedy otrzymasz punkty za złoto.
+        </dd>
+      </dl>
+      <p>
+        Percepcje dotyczą sąsiadów przez krawędź, bez przekątnych. Brak powiewu i smrodu również
+        daje wiedzę: wyklucza zagrożenia obok.
+      </p>
+      <p>
+        „Pełna mapa” pokazuje prawdziwy świat wyłącznie tobie. Agent nadal podejmuje decyzje na
+        podstawie swoich obserwacji. Kliknięcie pola wyświetla opis, bez poruszania postacią.
+      </p>
+      <p>
+        Użyj „Jeden krok agenta”, aby zrozumieć pojedynczą decyzję, albo uruchom pokaz. W każdej
+        chwili możesz go zatrzymać, wykonać własny ruch lub cofnąć akcję.
+      </p>
+    </dialog>
+  </body>
+</html>

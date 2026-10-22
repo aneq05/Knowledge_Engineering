@@ -19,7 +19,7 @@ class SearchResult:
 def solve_dfs(
     start: BlockWorldState,
     goal: BlockWorldState,
-    node_limit: int = 200_000,
+    node_limit: int = 200,
     time_limit_seconds: float = 10.0,
 ) -> SearchResult:
     started = perf_counter()
