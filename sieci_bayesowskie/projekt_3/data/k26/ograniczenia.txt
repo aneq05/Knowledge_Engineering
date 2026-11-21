@@ -1,0 +1,10 @@
+# Zapytania z ograniczeniami do zadań na 8 pkt
+P(I | M==Low or E==No)
+P(Q | not E==No or I==Intelligent)
+P(D | atleast(2, G==B, M==Low, I==Intelligent))
+P(D | S==Good and (M==Low or I==Dumb))
+P(I | not (L==Good or E==No) and D!=Easy)
+P(E | I==Intelligent and S==Bad and G in {A, B})
+P(E | atmost(1, B==Yes, D==Hard, S==Good) and I==Intelligent)
+P(M | (G==A and Q==High and L==Bad) or (I==Intelligent and B!=Yes and D==Easy))
+P(I | E==No and S==Bad and G in {A, B} and L==Bad and D==Hard and M==High)

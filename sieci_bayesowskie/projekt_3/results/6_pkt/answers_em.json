@@ -1,0 +1,679 @@
+[
+  {
+    "query": "P(G)",
+    "line": 2,
+    "kind": "P",
+    "P_evidence": 0.9999999999999998,
+    "distribution": [
+      {
+        "assignment": {
+          "G": "A"
+        },
+        "probability": 0.3859123274098051
+      },
+      {
+        "assignment": {
+          "G": "B"
+        },
+        "probability": 0.12076944270817574
+      },
+      {
+        "assignment": {
+          "G": "C"
+        },
+        "probability": 0.49331822988201923
+      }
+    ],
+    "MAP": null
+  },
+  {
+    "query": "P(L)",
+    "line": 3,
+    "kind": "P",
+    "P_evidence": 0.9999999999999998,
+    "distribution": [
+      {
+        "assignment": {
+          "L": "Bad"
+        },
+        "probability": 0.5853791834842816
+      },
+      {
+        "assignment": {
+          "L": "Good"
+        },
+        "probability": 0.41462081651571836
+      }
+    ],
+    "MAP": null
+  },
+  {
+    "query": "P(I)",
+    "line": 4,
+    "kind": "P",
+    "P_evidence": 0.9999999999999998,
+    "distribution": [
+      {
+        "assignment": {
+          "I": "Dumb"
+        },
+        "probability": 0.7901173630087373
+      },
+      {
+        "assignment": {
+          "I": "Intelligent"
+        },
+        "probability": 0.2098826369912628
+      }
+    ],
+    "MAP": null
+  },
+  {
+    "query": "P(B)",
+    "line": 5,
+    "kind": "P",
+    "P_evidence": 0.9999999999999998,
+    "distribution": [
+      {
+        "assignment": {
+          "B": "No"
+        },
+        "probability": 0.6131411797724229
+      },
+      {
+        "assignment": {
+          "B": "Yes"
+        },
+        "probability": 0.3868588202275771
+      }
+    ],
+    "MAP": null
+  },
+  {
+    "query": "P(G | D==Hard, I==Intelligent)",
+    "line": 6,
+    "kind": "P",
+    "P_evidence": 0.08542223325544397,
+    "distribution": [
+      {
+        "assignment": {
+          "G": "A"
+        },
+        "probability": 0.37028515151135555
+      },
+      {
+        "assignment": {
+          "G": "B"
+        },
+        "probability": 0.22351297243785712
+      },
+      {
+        "assignment": {
+          "G": "C"
+        },
+        "probability": 0.4062018760507873
+      }
+    ],
+    "MAP": null
+  },
+  {
+    "query": "P(G | D==Easy, I==Dumb)",
+    "line": 7,
+    "kind": "P",
+    "P_evidence": 0.46853959626418085,
+    "distribution": [
+      {
+        "assignment": {
+          "G": "A"
+        },
+        "probability": 0.5152412736482266
+      },
+      {
+        "assignment": {
+          "G": "B"
+        },
+        "probability": 0.14688163750629948
+      },
+      {
+        "assignment": {
+          "G": "C"
+        },
+        "probability": 0.33787708884547396
+      }
+    ],
+    "MAP": null
+  },
+  {
+    "query": "P(I | G==A, S==Good)",
+    "line": 8,
+    "kind": "P",
+    "P_evidence": 0.1494256278252775,
+    "distribution": [
+      {
+        "assignment": {
+          "I": "Dumb"
+        },
+        "probability": 0.12190260759249676
+      },
+      {
+        "assignment": {
+          "I": "Intelligent"
+        },
+        "probability": 0.8780973924075033
+      }
+    ],
+    "MAP": null
+  },
+  {
+    "query": "P(I | G==C)",
+    "line": 9,
+    "kind": "P",
+    "P_evidence": 0.493318229882019,
+    "distribution": [
+      {
+        "assignment": {
+          "I": "Dumb"
+        },
+        "probability": 0.9257048841224491
+      },
+      {
+        "assignment": {
+          "I": "Intelligent"
+        },
+        "probability": 0.07429511587755096
+      }
+    ],
+    "MAP": null
+  },
+  {
+    "query": "P(I | G==C, D==Hard)",
+    "line": 10,
+    "kind": "P",
+    "P_evidence": 0.3330569714386603,
+    "distribution": [
+      {
+        "assignment": {
+          "I": "Dumb"
+        },
+        "probability": 0.895817609657212
+      },
+      {
+        "assignment": {
+          "I": "Intelligent"
+        },
+        "probability": 0.10418239034278798
+      }
+    ],
+    "MAP": null
+  },
+  {
+    "query": "P(D | G==C)",
+    "line": 11,
+    "kind": "P",
+    "P_evidence": 0.493318229882019,
+    "distribution": [
+      {
+        "assignment": {
+          "D": "Easy"
+        },
+        "probability": 0.3248638479905486
+      },
+      {
+        "assignment": {
+          "D": "Hard"
+        },
+        "probability": 0.6751361520094514
+      }
+    ],
+    "MAP": null
+  },
+  {
+    "query": "P(G, L | S==Good)",
+    "line": 12,
+    "kind": "P",
+    "P_evidence": 0.25299999999999967,
+    "distribution": [
+      {
+        "assignment": {
+          "G": "A",
+          "L": "Bad"
+        },
+        "probability": 0.0712085299727702
+      },
+      {
+        "assignment": {
+          "G": "A",
+          "L": "Good"
+        },
+        "probability": 0.5194065997714105
+      },
+      {
+        "assignment": {
+          "G": "B",
+          "L": "Bad"
+        },
+        "probability": 0.11465088121684161
+      },
+      {
+        "assignment": {
+          "G": "B",
+          "L": "Good"
+        },
+        "probability": 0.02605680396003926
+      },
+      {
+        "assignment": {
+          "G": "C",
+          "L": "Bad"
+        },
+        "probability": 0.25699043195960597
+      },
+      {
+        "assignment": {
+          "G": "C",
+          "L": "Good"
+        },
+        "probability": 0.01168675311933253
+      }
+    ],
+    "MAP": null
+  },
+  {
+    "query": "P(G | M==Low)",
+    "line": 13,
+    "kind": "P",
+    "P_evidence": 0.29225491338802945,
+    "distribution": [
+      {
+        "assignment": {
+          "G": "A"
+        },
+        "probability": 0.3859123274098051
+      },
+      {
+        "assignment": {
+          "G": "B"
+        },
+        "probability": 0.12076944270817576
+      },
+      {
+        "assignment": {
+          "G": "C"
+        },
+        "probability": 0.4933182298820193
+      }
+    ],
+    "MAP": null
+  },
+  {
+    "query": "P(M | G==A, L==Bad)",
+    "line": 14,
+    "kind": "P",
+    "P_evidence": 0.04065002039346005,
+    "distribution": [
+      {
+        "assignment": {
+          "M": "Low"
+        },
+        "probability": 0.29225491338802956
+      },
+      {
+        "assignment": {
+          "M": "High"
+        },
+        "probability": 0.7077450866119704
+      }
+    ],
+    "MAP": null
+  },
+  {
+    "query": "P(B | I==Intelligent)",
+    "line": 15,
+    "kind": "P",
+    "P_evidence": 0.20988263699126275,
+    "distribution": [
+      {
+        "assignment": {
+          "B": "No"
+        },
+        "probability": 0.40353285225953345
+      },
+      {
+        "assignment": {
+          "B": "Yes"
+        },
+        "probability": 0.5964671477404666
+      }
+    ],
+    "MAP": null
+  },
+  {
+    "query": "P(I | B==Yes)",
+    "line": 16,
+    "kind": "P",
+    "P_evidence": 0.38685882022757695,
+    "distribution": [
+      {
+        "assignment": {
+          "I": "Dumb"
+        },
+        "probability": 0.676398491385612
+      },
+      {
+        "assignment": {
+          "I": "Intelligent"
+        },
+        "probability": 0.32360150861438797
+      }
+    ],
+    "MAP": null
+  },
+  {
+    "query": "P(I | G==A, L==Bad, M==High)",
+    "line": 17,
+    "kind": "P",
+    "P_evidence": 0.028769852204147756,
+    "distribution": [
+      {
+        "assignment": {
+          "I": "Dumb"
+        },
+        "probability": 0.5855537676904333
+      },
+      {
+        "assignment": {
+          "I": "Intelligent"
+        },
+        "probability": 0.4144462323095667
+      }
+    ],
+    "MAP": null
+  },
+  {
+    "query": "MAP(G)",
+    "line": 18,
+    "kind": "MAP",
+    "P_evidence": 0.9999999999999998,
+    "distribution": [
+      {
+        "assignment": {
+          "G": "A"
+        },
+        "probability": 0.3859123274098051
+      },
+      {
+        "assignment": {
+          "G": "B"
+        },
+        "probability": 0.12076944270817574
+      },
+      {
+        "assignment": {
+          "G": "C"
+        },
+        "probability": 0.49331822988201923
+      }
+    ],
+    "MAP": {
+      "G": "C"
+    }
+  },
+  {
+    "query": "MAP(G | D==Easy, I==Intelligent)",
+    "line": 19,
+    "kind": "MAP",
+    "P_evidence": 0.12446040373581876,
+    "distribution": [
+      {
+        "assignment": {
+          "G": "A"
+        },
+        "probability": 0.8863607312930791
+      },
+      {
+        "assignment": {
+          "G": "B"
+        },
+        "probability": 0.09795184049539139
+      },
+      {
+        "assignment": {
+          "G": "C"
+        },
+        "probability": 0.015687428211529447
+      }
+    ],
+    "MAP": {
+      "G": "A"
+    }
+  },
+  {
+    "query": "MAP(Q, S | D==Hard, G==B)",
+    "line": 20,
+    "kind": "MAP",
+    "P_evidence": 0.039758453957629454,
+    "distribution": [
+      {
+        "assignment": {
+          "Q": "Low",
+          "S": "Bad"
+        },
+        "probability": 0.2309377495255364
+      },
+      {
+        "assignment": {
+          "Q": "Low",
+          "S": "Good"
+        },
+        "probability": 0.3011789015734101
+      },
+      {
+        "assignment": {
+          "Q": "High",
+          "S": "Bad"
+        },
+        "probability": 0.28635442544677575
+      },
+      {
+        "assignment": {
+          "Q": "High",
+          "S": "Good"
+        },
+        "probability": 0.18152892345427774
+      }
+    ],
+    "MAP": {
+      "Q": "Low",
+      "S": "Good"
+    }
+  },
+  {
+    "query": "P(I | M==Low or E==No)",
+    "line": 2,
+    "kind": "P",
+    "P_evidence": 0.4248530665402319,
+    "distribution": [
+      {
+        "assignment": {
+          "I": "Dumb"
+        },
+        "probability": 0.7901173630087366
+      },
+      {
+        "assignment": {
+          "I": "Intelligent"
+        },
+        "probability": 0.20988263699126278
+      }
+    ],
+    "MAP": null
+  },
+  {
+    "query": "P(Q | not E==No or I==Intelligent)",
+    "line": 3,
+    "kind": "P",
+    "P_evidence": 0.6918622313753037,
+    "distribution": [
+      {
+        "assignment": {
+          "Q": "Low"
+        },
+        "probability": 0.6923359927328406
+      },
+      {
+        "assignment": {
+          "Q": "High"
+        },
+        "probability": 0.3076640072671585
+      }
+    ],
+    "MAP": null
+  },
+  {
+    "query": "P(D | atleast(2, G==B, M==Low, I==Intelligent))",
+    "line": 4,
+    "kind": "P",
+    "P_evidence": 0.10963293223969874,
+    "distribution": [
+      {
+        "assignment": {
+          "D": "Easy"
+        },
+        "probability": 0.5939393900904697
+      },
+      {
+        "assignment": {
+          "D": "Hard"
+        },
+        "probability": 0.4060606099095299
+      }
+    ],
+    "MAP": null
+  },
+  {
+    "query": "P(D | S==Good and (M==Low or I==Dumb))",
+    "line": 5,
+    "kind": "P",
+    "P_evidence": 0.11569267302605099,
+    "distribution": [
+      {
+        "assignment": {
+          "D": "Easy"
+        },
+        "probability": 0.5930000000000001
+      },
+      {
+        "assignment": {
+          "D": "Hard"
+        },
+        "probability": 0.40700000000000036
+      }
+    ],
+    "MAP": null
+  },
+  {
+    "query": "P(I | not (L==Good or E==No) and D!=Easy)",
+    "line": 6,
+    "kind": "P",
+    "P_evidence": 0.21149771701679781,
+    "distribution": [
+      {
+        "assignment": {
+          "I": "Dumb"
+        },
+        "probability": 0.8496669215784858
+      },
+      {
+        "assignment": {
+          "I": "Intelligent"
+        },
+        "probability": 0.15033307842151433
+      }
+    ],
+    "MAP": null
+  },
+  {
+    "query": "P(E | I==Intelligent and S==Bad and G in {A, B})",
+    "line": 7,
+    "kind": "P",
+    "P_evidence": 0.013103528141628164,
+    "distribution": [
+      {
+        "assignment": {
+          "E": "No"
+        },
+        "probability": 0.38998987118991923
+      },
+      {
+        "assignment": {
+          "E": "Yes"
+        },
+        "probability": 0.6100101288100808
+      }
+    ],
+    "MAP": null
+  },
+  {
+    "query": "P(E | atmost(1, B==Yes, D==Hard, S==Good) and I==Intelligent)",
+    "line": 8,
+    "kind": "P",
+    "P_evidence": 0.044882785083683575,
+    "distribution": [
+      {
+        "assignment": {
+          "E": "No"
+        },
+        "probability": 0.38998987118991935
+      },
+      {
+        "assignment": {
+          "E": "Yes"
+        },
+        "probability": 0.6100101288100807
+      }
+    ],
+    "MAP": null
+  },
+  {
+    "query": "P(M | (G==A and Q==High and L==Bad) or (I==Intelligent and B!=Yes and D==Easy))",
+    "line": 9,
+    "kind": "P",
+    "P_evidence": 0.04626880576385992,
+    "distribution": [
+      {
+        "assignment": {
+          "M": "Low"
+        },
+        "probability": 0.2922549133880295
+      },
+      {
+        "assignment": {
+          "M": "High"
+        },
+        "probability": 0.7077450866119708
+      }
+    ],
+    "MAP": null
+  },
+  {
+    "query": "P(I | E==No and S==Bad and G in {A, B} and L==Bad and D==Hard and M==High)",
+    "line": 10,
+    "kind": "P",
+    "P_evidence": 0.0016266033038275782,
+    "distribution": [
+      {
+        "assignment": {
+          "I": "Dumb"
+        },
+        "probability": 0.9137168221071899
+      },
+      {
+        "assignment": {
+          "I": "Intelligent"
+        },
+        "probability": 0.08628317789281018
+      }
+    ],
+    "MAP": null
+  }
+]
