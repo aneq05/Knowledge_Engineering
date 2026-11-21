@@ -1,266 +1,289 @@
-# Projekt 2 - menedżer pakietów
+# Project 2 – Package Manager development notes
 
-Zakres zadań opisuje [projekt2.pdf](projekt2.pdf). Oznaczenie **4.2** oznacza
-zadanie 2 z progu na 4 punkty; analogicznie używamy numerów 6.1 i 8.1.
-Progi są kumulatywne: na 6 punktów trzeba wykonać również zadania na 4,
-a na 8 punktów także zadania na 4 i 6.
+For the current implementation, commands, and 4- and 6-point reports, see
+the [project README](package_manager/README.md). The notes below record
+the earlier layout and development plan.
 
-**Aktualnie program instaluje pakiety do pustego środowiska.** Zaimplementowane
-są główne elementy 4.1-4.4. Do zamknięcia progu 4 brakuje eksperymentów 4.5,
-końcowego raportu oraz drobnego uzupełnienia walidacji opisanego poniżej.
-Operacje na istniejącym stanie, usuwanie, wyjaśnianie i aktualizacja pozostają
-do dodania.
+The [assignment specification](projekt2.pdf) defines the tasks.
+**4.2** means task 2 at the 4-point level. The same convention applies to
+6.1 and 8.1. The levels are cumulative, so the 6-point level includes the
+4-point requirements, and the 8-point level includes both.
 
-## Uruchomienie
+At the stage described here, the program installed packages into an empty
+environment and covered the main parts of 4.1–4.4. The 4.5 experiments,
+the final report, and a validation detail were pending. Installation into
+an existing state, removal, explanations, and updates were planned.
 
-Wymagany jest Python 3.11 lub nowszy.
+## Original command-line interface
 
-W katalogu `repo_project_2` zainstaluj zależność i uruchom program:
+The original program required Python 3.11 or later. The commands at that
+stage were run from the `repo_project_2` directory.
 
-```powershell
+```text
 python -m pip install -r requirements.txt
 python -m package_manager repo_example.json requests_example.txt
 python -m package_manager repos/repos/k26/repo_10.json repos/repos/k26/requests_10.txt
 ```
 
-Pierwszy argument to plik repozytorium JSON, a drugi to plik żądań — jedno
-żądanie na wiersz. Program wypisuje wybrane wersje i wartości trzech kryteriów.
-Jeśli żadna instalacja nie spełnia żądań, wypisuje informację o braku rozwiązania.
+The first argument was the JSON repository file. The second was the
+request file, with one request per line. The program printed the selected
+versions and values of the three objectives, or reported infeasibility.
 
-`installer.install(repo, requests)` zwraca `InstallationResult` lub `None`,
-gdy rozwiązanie nie istnieje. Przed zwróceniem wyniku sprawdza go funkcją
-`verification.verify_state(repo, state, requests)`. Weryfikator nie używa Z3
-i zwraca listę wszystkich wykrytych naruszeń. Przy pustej liście stan jest
-poprawny. Można wywołać go również bez żądań, podając tylko repozytorium i stan.
+`installer.install(repo, requests)` returns an `InstallationResult` or
+`None` when the requests are infeasible. Before returning a result, it
+calls `verification.verify_state(repo, state, requests)`. The verifier
+checks the state independently of Z3 and returns all detected violations.
+An empty list indicates a valid state. The request argument is optional
+when checking a repository and state.
 
-Kryteria optymalizacji są stosowane kolejno: suma przestarzałości żądanych
-pakietów, liczba wszystkich zainstalowanych pakietów, a następnie suma
-przestarzałości pozostałych. Przestarzałość wersji to jej pozycja wśród wersji
-danego pakietu posortowanych od najnowszej, zaczynając od zera.
+The optimization objectives minimize requested package outdatedness first,
+then the total number of installed packages, and then the outdatedness of
+the remaining packages. A version's outdatedness is its position in the
+package's versions sorted newest first, starting at zero.
 
-## Walidacja i modele
+## Validation and models
 
-Loader odrzuca powtórzone klucze JSON, nieznane pola, błędne typy, nazwy,
-wersje i operatory, równoważne duplikaty oraz zależności i konflikty pakietu
-z samym sobą. Komunikat zawiera nazwę pliku i ścieżkę, np.
-`packages['app'].versions['2.0'].requires[1]`. Błędy składni JSON wskazują
-linię i kolumnę, a błędy plików żądań i stanu — numer linii.
+The loader rejects duplicate JSON keys, unknown fields, invalid types,
+names, versions, and operators, equivalent duplicates, self-dependencies,
+and self-conflicts. Messages identify the file and a location such as
+`packages['app'].versions['2.0'].requires[1]`. JSON syntax errors include
+a line and column. Request and state file errors include a line number.
 
-Żądania i wymagania w repozytorium korzystają z jednej klasy `Requirement`.
-Jej ograniczenia są obiektami `VersionConstraint`. `Dependency` przechowuje
-alternatywy rozdzielone w pliku znakiem `|`. Parsowanie odbywa się podczas
-wczytywania; solver i weryfikator używają już gotowych obiektów.
+User requests and repository requirements share the `Requirement` class.
+Its constraints are `VersionConstraint` objects. `Dependency` stores
+alternatives written with `|` in the input. Loading parses these constructs
+into objects that the solver and verifier can use directly.
 
-Walidacja repozytorium i normalizacja nazw odbywają się w `load_repository`.
-Baza wiedzy i weryfikator oczekują repozytorium w tej postaci, więc nie
-powtarzają sprawdzania jego formatu. Przy ręcznym tworzeniu obiektu
-`Repository` w kodzie trzeba zachować te same zasady, w tym znormalizowane
-nazwy jako klucze słownika `packages` i brak równoważnych duplikatów wersji.
+`load_repository` validates the repository and normalizes package names.
+The knowledge base and verifier expect this normalized representation. If
+you create a `Repository` programmatically, apply the same rules, including
+normalized keys in `packages` and one entry per equivalent version.
 
-Przy tworzeniu żądań w kodzie użyj parsera:
+Use the parser when creating requests in code. Run this example from the
+current `package_manager/` project directory.
 
 ```python
 from package_manager.installer import install
 from package_manager.loaders import load_repository
 from package_manager.requirements_parser import parse_requirement
 
-result = install(load_repository("repo_example.json"), [parse_requirement("app >=1.0")])
+result = install(load_repository("examples/repo_example.json"), [parse_requirement("app >=1.0")])
 ```
 
-## Zadania na 4 punkty: co jest zrobione i gdzie
+## Original progress on the 4-point tasks
 
-| Punkt | Status | Miejsce w kodzie i odpowiedzialność |
+| Task | Status at the time | Implementation |
 | --- | --- | --- |
-| **4.1 - wczytywanie, modele, walidacja** | Zrealizowane; uwaga o pustym `versions` poniżej | [models.py](package_manager/models.py): `Repository`, `PackageVersion`, `Requirement`, `VersionConstraint`, `Dependency`, `EnvironmentState`, `InstalledPackage`. [json_reader.py](package_manager/json_reader.py): `read_json`, `_ObjectPairs`, `_convert_object` wykrywają błędy JSON i duplikaty kluczy. [loaders.py](package_manager/loaders.py): `load_repository`, `load_requests`, `load_state` oraz pomocnicze funkcje walidacji. [requirements_parser.py](package_manager/requirements_parser.py): parsowanie i normalizacja nazw. [versions.py](package_manager/versions.py): `version_key`, czyli numeryczne porównywanie wersji. |
-| **4.2 - baza wiedzy A1-A3** | Zrealizowane | [knowledge_base.py](package_manager/knowledge_base.py): `build_knowledge_base` i `_KnowledgeBaseBuilder`. `create_variables` tworzy zmienne `p==v`, `add_single_version_axiom` realizuje A1, `add_dependencies` A2, a `add_conflicts` A3. `Axiom` przechowuje formułę, identyfikator i czytelną etykietę. |
-| **4.3 - optymalna instalacja** | Zrealizowane dla pustego środowiska | [installer.py](package_manager/installer.py): `install` uruchamia `z3.Optimize` z kolejnością `lex`; `_request_formula` wymusza żądania, `_costs` buduje trzy kryteria, a `_read_state` odczytuje wynik. `None` oznacza brak rozwiązania; stan `unknown` solvera jest zgłaszany jako błąd. [__main__.py](package_manager/__main__.py): `main` przyjmuje pliki i wypisuje wynik albo informację o braku rozwiązania. |
-| **4.4 - weryfikacja bez solvera** | Zrealizowane | [verification.py](package_manager/verification.py): `verify_state`, `_find_version`, `_check_dependencies`, `_check_conflicts` sprawdzają stan i opcjonalne żądania. Weryfikator zwraca wszystkie wykryte naruszenia. `install` wywołuje go przed zwróceniem każdego znalezionego stanu; przy błędach zgłasza całą ich listę, którą CLI wypisuje. |
-| **4.5 - eksperymenty i raport** | Do zrobienia | Dane są w [repos/repos/k26](repos/repos/k26). Brakuje skryptu zbierającego pomiary, tabeli wyników i komentarza o skalowaniu. Sprawdzenie przykładów i uruchomienie małego repozytorium nie zastępują tego eksperymentu. |
+| **4.1 Loading, models, and validation** | Implemented with the empty-`versions` caveat below | [models.py](package_manager/package_manager/models.py) defines `Repository`, `PackageVersion`, `Requirement`, `VersionConstraint`, `Dependency`, `EnvironmentState`, and `InstalledPackage`. [json_reader.py](package_manager/package_manager/json_reader.py) uses `read_json`, `_ObjectPairs`, and `_convert_object` to detect JSON errors and duplicate keys. [loaders.py](package_manager/package_manager/loaders.py) provides `load_repository`, `load_requests`, `load_state`, and validation helpers. [requirements_parser.py](package_manager/package_manager/requirements_parser.py) parses requirements and normalizes names. [versions.py](package_manager/package_manager/versions.py) provides `version_key` for numeric version comparison. |
+| **4.2 Knowledge base with axioms A1–A3** | Implemented | [knowledge_base.py](package_manager/package_manager/knowledge_base.py) defines `build_knowledge_base` and `_KnowledgeBaseBuilder`. `create_variables` creates `p==v` variables, `add_single_version_axiom` implements A1, `add_dependencies` implements A2, and `add_conflicts` implements A3. An `Axiom` stores a formula, an identifier, and a label. |
+| **4.3 Optimal installation** | Implemented for an empty environment | [installer.py](package_manager/package_manager/installer.py) uses `z3.Optimize` with `lex` priority. `_request_formula` enforces the requests, `_costs` builds three objectives, and `_read_state` extracts the result. Infeasibility returns `None`. A solver result of `unknown` raises an error. The CLI reports the solution or infeasibility. |
+| **4.4 Independent verification** | Implemented | [verification.py](package_manager/package_manager/verification.py) contains `verify_state`, `_find_version`, `_check_dependencies`, and `_check_conflicts`. The verifier checks the state and any supplied requests, then returns all violations. Installation checks each result before returning it, and the CLI reports violations. |
+| **4.5 Experiments and report** | Pending at the time | The [Group 26 data](repos/repos/k26) was available. The remaining work included a measurement script, a result table, and a discussion of scaling. Sample runs and checks on small repositories were preliminary steps. |
 
-Opis kodowania oraz konkretne formuły wymagane w 4.2 są już w
-[kodowanie_bazy_wiedzy.md](kodowanie_bazy_wiedzy.md). Trzeba włączyć ten
-materiał do końcowego raportu.
+The [knowledge base notes](kodowanie_bazy_wiedzy.md) explain the encoding and
+formulas required for 4.2. This material was intended for the final report.
 
-**Uwaga do 4.1:** PDF opisuje pakiet jako posiadający co najmniej jedną wersję.
-Obecne `_load_versions` dopuszcza pusty obiekt `versions: {}`. Do pełnego
-domknięcia walidacji należy go odrzucać z lokalizacją
-`packages['nazwa'].versions` i dodać odpowiedni test.
+At this stage, `_load_versions` accepted an empty `versions: {}` object.
+The assignment required at least one version per package. The planned
+validation would report `packages['name'].versions` and include a test.
 
-### Co jeszcze trzeba zrobić w 4.5
+### Planned benchmark for 4.5
 
-- [ ] Dla `N = 10, 30, 100, 300, 1000` wykonać instalację z pary
-  `repo_N.json` i `requests_N.txt` grupy **k26**.
-- [ ] Dla każdego przypadku zapisać liczbę wersji i aksjomatów oraz żądania.
-- [ ] Zapisać liczbę zainstalowanych pakietów i ich przestarzałość lub brak rozwiązania.
-- [ ] Zmierzyć czas budowy bazy wiedzy **łącznie z wczytaniem pliku** oraz osobno czas rozwiązania.
-- [ ] Zapisać wynik niezależnej weryfikacji; dla braku rozwiązania zaznaczyć, że nie ma stanu do sprawdzenia.
-- [ ] W raporcie podać numer grupy 26 i skomentować zależność czasów od rozmiaru repozytorium.
+- [ ] Run the installation for every `N = 10, 30, 100, 300, 1000` with the
+  Group 26 pair `repo_N.json` and `requests_N.txt`.
+- [ ] Record the version count, axiom count, and requests for each case.
+- [ ] Record the installed package count and outdatedness, or record that
+  the case is infeasible.
+- [ ] Measure the time to build the knowledge base, including file
+  loading, and measure solving time separately.
+- [ ] Record the result of independent verification. For infeasible
+  cases, record that there is no resulting state to verify.
+- [ ] Identify Group 26 in the report and discuss how runtime scales
+  with repository size.
 
-Można dodać moduł `experiments.py`, który zbierze te dane do CSV i tabeli raportu.
-Taki moduł jeszcze nie istnieje. `repo_200.json` jest przeznaczony do zadania
-6.4 i nie należy do zestawu rozmiarów z 4.5.
+The proposed `experiments.py` module would collect measurements for a CSV
+file and a report table. `repo_200.json` is reserved for task 6.4. The
+[current 4-point report](package_manager/4pkt/raport4.md) contains the
+completed benchmark.
 
-## Zadania na 6 punktów: przygotowane elementy i brakujące funkcje
+## Original plan for the 6-point tasks
 
-### 6.1 - instalacja do istniejącego stanu
+### 6.1 Installation into an existing state
 
-**Już jest:** `load_state`, klasy stanu, flaga `manual`, wspólna baza wiedzy
-i weryfikator. Przy instalacji do pustego środowiska pakiety żądane dostają
-`manual=True`.
+The starting code provided `load_state`, state classes, the `manual`
+flag, a shared knowledge base, and a verifier. Installation into an empty
+environment marked requested packages with `manual=True`.
 
-**Do dodania:**
+- [ ] Pass the initial state to the installer and read and write states
+  through the CLI.
+- [ ] Preserve manual installation flags and mark requested packages as
+  manually installed.
+- [ ] Generate a plan of installations, removals, upgrades, and downgrades.
+- [ ] Minimize these five objectives in order.
 
-- [ ] Przekazywanie stanu początkowego do instalatora oraz odczyt i zapis stanu z CLI.
-- [ ] Zachowywanie informacji o pakietach ręcznych i oznaczanie żądanych pakietów jako ręczne.
-- [ ] Plan zmian: instalacja, usunięcie, podniesienie albo obniżenie wersji.
-- [ ] Pięć kryteriów, minimalizowanych w poniższej kolejności:
+1. Number of removed packages.
+2. Number of version changes among retained packages.
+3. Outdatedness of requested packages absent from the initial state.
+4. Number of newly installed packages.
+5. Outdatedness of the other newly installed packages.
 
-1. Liczba usuniętych pakietów.
-2. Liczba zmian wersji pakietów, które pozostają zainstalowane.
-3. Przestarzałość żądanych pakietów, które nie były zainstalowane.
-4. Liczba nowych pakietów.
-5. Przestarzałość pozostałych nowych pakietów.
+An empty initial state should give the same result as the criteria from
+4.3. The original `install` function accepted a repository and requests.
+The proposed changes involved `installer.py`, `loaders.py`, and
+`__main__.py`.
 
-Dla pustego stanu wynik ma odpowiadać kryteriom 4.3. Obecne `install`
-nie przyjmuje stanu początkowego, a zapis stanu do pliku nie jest zaimplementowany.
-Główne miejsca do rozszerzenia: `installer.py`, `loaders.py` i `__main__.py`.
+### 6.2 Removal and autoremove
 
-### 6.2 - usuwanie i autoremove
+The proposed operation would read a set `P` with one package name per line.
+The final state would exclude every package in `P`. Dependent packages
+could be removed or switched to a compatible version.
 
-**Do dodania:** operacja usuwania zbioru pakietów `P`, odczytywanego z pliku
-z jedną nazwą pakietu w linii. Żaden pakiet z `P` nie może pozostać
-zainstalowany. Pakiety zależne trzeba usunąć lub zmienić ich wersję.
+Minimize the objectives in the following order.
 
-Kryteria minimalizowane kolejno:
+1. Removed manually installed packages outside `P`.
+2. Version changes.
+3. Newly installed packages.
+4. Removed packages.
 
-1. Liczba usuniętych pakietów ręcznych spoza `P`.
-2. Liczba zmian wersji.
-3. Liczba nowych pakietów.
-4. Liczba usuniętych pakietów.
+With `autoremove`, the fourth objective minimizes the total number of
+installed packages. This allows the solver to discard unused dependencies.
+Each result must pass `verify_state` and include a change plan. A
+standalone `remover.py` was proposed.
 
-Opcja `autoremove` zmienia **czwarte** kryterium na minimalizację liczby
-wszystkich zainstalowanych pakietów. Dzięki temu znikają też niepotrzebne
-zależności. Każdy wynik musi przejść `verify_state` i mieć plan zmian.
-Możliwy nowy moduł: `remover.py`; obecnie go nie ma.
+### 6.3 Explanations for infeasible requests
 
-### 6.3 - wyjaśnianie braku rozwiązania
+The starting code included readable labels through `Axiom.label`,
+identifiers through `Axiom.name`, and
+`KnowledgeBase.add_to_solver(..., tracked=True)` for tracking axioms.
 
-**Już jest:** czytelne etykiety `Axiom.label`, identyfikatory `Axiom.name`
-oraz `KnowledgeBase.add_to_solver(..., tracked=True)` do śledzenia aksjomatów.
+- [ ] Check satisfiability with `z3.Solver` and track the user's requests.
+- [ ] Read `unsat_core` and map its entries to readable labels.
+- [ ] Minimize the core so removing any single member makes the rest
+  satisfiable.
+- [ ] Show an explanation for requesting `app==2.0` together with `tool`
+  in the sample repository.
+- [ ] Explain infeasible cases from 4.5 or create infeasible examples if
+  the benchmark has none.
 
-**Do dodania:**
+The requirement is a **subset-minimal unsatisfiable core**. Each member
+must be necessary within that set. Finding a core with the smallest
+possible number of members is a stronger requirement.
+`explanations.py` was proposed for this logic.
 
-- [ ] Osobne sprawdzanie sprzeczności za pomocą `z3.Solver`, ze śledzeniem również żądań użytkownika.
-- [ ] Odczyt `unsat_core` i mapowanie jego elementów na czytelne etykiety.
-- [ ] Zapewnienie minimalności: po usunięciu dowolnego elementu rdzenia pozostałe warunki mają być spełnialne.
-- [ ] Wypisanie wyjaśnienia dla `app==2.0` razem z `tool` w repozytorium przykładowym.
-- [ ] Wyjaśnienia przypadków bez rozwiązania z 4.5; jeśli ich nie ma, skonstruowanie kilku przykładów.
+### 6.4 Reproducible operation scenario
 
-Chodzi o rdzeń **minimalny względem zawierania**, a nie koniecznie rdzeń
-o najmniejszej liczbie elementów. Samo posiadanie etykiet i `tracked=True`
-nie realizuje jeszcze tego zadania. Możliwy nowy moduł: `explanations.py`.
+- [ ] Start with an empty state on [repo_200.json](repos/repos/k26/repo_200.json).
+- [ ] Run at least 10 random operations, including installations and
+  removals with and without autoremove.
+- [ ] Set and record the random seed.
+- [ ] Check every intermediate state with `verify_state`.
+- [ ] Record elapsed time and the counts of changes, installed packages,
+  and manually installed packages for each operation.
 
-### 6.4 - odtwarzalny scenariusz operacji
+This experiment depended on 6.1 and 6.2. The original plan suggested
+including it in `experiments.py`. The
+[current 6-point report](package_manager/6pkt/raport6.md) contains the
+completed scenario.
 
-- [ ] Na [repo_200.json](repos/repos/k26/repo_200.json) zacząć od pustego stanu.
-- [ ] Wykonać co najmniej 10 losowych operacji: instalacje oraz usunięcia z `autoremove` i bez niego.
-- [ ] Ustalić i podać ziarno generatora losowego.
-- [ ] Zweryfikować każdy stan pośredni funkcją `verify_state`.
-- [ ] W raporcie podać dla każdej operacji liczbę zmian, liczbę pakietów,
-  liczbę pakietów ręcznych i czas.
+## Requirements for the 8-point level
 
-Ten eksperyment wymaga najpierw ukończenia 6.1 i 6.2. Można go dołączyć
-do planowanego modułu `experiments.py`.
+### 8.1 Updates
 
-## Zadania na 8 punktów: co trzeba dodać
+Update the set `P` of installed packages listed in a file. With no file,
+the operation targets every installed package. Manually installed packages
+and members of `P` must remain installed.
 
-### 8.1 - aktualizacja
+Minimize the objectives in the following order.
 
-**Do dodania:** aktualizacja zbioru zainstalowanych pakietów `P` podanego
-w pliku. Brak pliku oznacza aktualizację wszystkich pakietów.
-Pakiety ręczne oraz pakiety z `P` muszą pozostać zainstalowane.
+1. Outdatedness of packages in `P`.
+2. Removed packages.
+3. Version changes outside `P`.
+4. Newly installed packages.
+5. Outdatedness across all installed packages.
 
-Kryteria minimalizowane kolejno:
+The plan was to reuse the knowledge base, independent verifier, and state
+support from 6.1. Updates need their own constraints, objectives, and CLI
+dispatch. A standalone `updater.py` was proposed.
 
-1. Przestarzałość pakietów z `P`.
-2. Liczba usuniętych pakietów.
-3. Liczba zmian wersji pakietów spoza `P`.
-4. Liczba nowych pakietów.
-5. Przestarzałość wszystkich pakietów.
+### 8.2 Update conflicts and the Pareto front
 
-Do wykorzystania będą baza wiedzy, weryfikator i obsługa stanów z 6.1.
-Potrzebne są nowe ograniczenia, cele optymalizacji i komenda CLI.
-Możliwy nowy moduł: `updater.py`.
+- [ ] For each package in `P`, find its individually attainable newest
+  version while retaining manually installed packages.
+- [ ] Check whether all these versions can be installed together.
+- [ ] If they cannot, report the conflict and explain it with the
+  unsatisfiable core mechanism from 6.3.
+- [ ] List the nondominated solutions on the Pareto front for the
+  outdatedness of the conflicting packages.
 
-### 8.2 - konflikty aktualizacji i front Pareto
+In the assignment's reference example, the initial state is
+`a 1.0 manual`, `b 1.0 manual`. The front consists of
+`{a 2.0, b 1.0}` and `{a 1.1, b 2.0}`. Updating `a` alone should make
+`a 2.0` attainable without that conflict. Lexicographic optimization
+selects one solution based on objective order. This task requires
+enumerating the Pareto front.
 
-- [ ] Dla każdego pakietu z `P` znaleźć najnowszą wersję osiągalną osobno,
-  przy zachowaniu pakietów ręcznych.
-- [ ] Sprawdzić, czy te wersje da się zainstalować jednocześnie.
-- [ ] Jeśli nie, zgłosić konflikt i wyjaśnić go rdzeniem sprzeczności z 6.3.
-- [ ] Wypisać wszystkie rozwiązania nieporównywalne, czyli front Pareto
-  względem przestarzałości pakietów w konflikcie.
+### 8.3 PyPI data
 
-Przykład kontrolny z PDF: dla stanu `a 1.0 manual`, `b 1.0 manual`
-front składa się z `{a 2.0, b 1.0}` i `{a 1.1, b 2.0}`.
-Aktualizacja samego `a` powinna umożliwić `a 2.0` bez tego konfliktu.
-Obecne `priority="lex"` wybiera jeden kompromis i nie wyznacza frontu Pareto.
+The assignment describes a `pypi_data.json` file with 92 packages and
+3,330 versions. The plan called for obtaining it from the assignment
+materials and adding support for its format.
 
-### 8.3 - dane z PyPI
+- [ ] Read `requires_dist`, `requires_python`, and `meta.environment`.
+- [ ] Interpret versions and requirements using PEP 440 and PEP 508
+  through the `packaging` library.
+- [ ] Use `requires_python` to skip versions incompatible with the target
+  Python environment.
+- [ ] Evaluate environment markers using `meta.environment`.
+- [ ] Ignore extras as specified in the assignment.
+- [ ] Support installations, removals, updates, verification, and
+  explanations with the new input.
+- [ ] Report loading and solving times for a scenario such as installing
+  the oldest available `pandas` and `requests`, adding `boto3` and
+  `aiobotocore`, updating, removing `botocore`, and explaining the
+  conflict between the newest `boto3` and oldest `botocore`.
 
-**Do dodania:** obsługa `pypi_data.json` opisanego w instrukcji
-(92 pakiety, 3330 wersji). Tego pliku nie ma obecnie w katalogu projektu;
-trzeba pozyskać go z materiałów do zadania.
+The existing parser and `versions.py` handle the project's simplified
+format. PyPI data requires an adapter such as `pypi_loader.py`, along
+with support for broader version comparisons and requirement matching.
+The original loader should continue to validate the 4-point input format.
 
-- [ ] Odczyt pól `requires_dist`, `requires_python` i `meta.environment`.
-- [ ] Interpretacja wersji i wymagań zgodnie z PEP 440 / PEP 508 przez bibliotekę `packaging`.
-- [ ] Pomijanie wersji niezgodnych ze środowiskiem docelowym przez `requires_python`.
-- [ ] Obliczanie znaczników środowiska dla danych z `meta.environment`.
-- [ ] Pomijanie dodatków `extras`, zgodnie z poleceniem.
-- [ ] Zachowanie działania instalacji, usuwania, aktualizacji, weryfikacji i wyjaśnień na nowych danych.
-- [ ] Scenariusz w raporcie z czasami wczytania i rozwiązania, np. instalacja
-  najstarszych dostępnych `pandas` i `requests`, doinstalowanie `boto3` oraz
-  `aiobotocore`, aktualizacje, usunięcie `botocore` i wyjaśnienie sprzeczności
-  najnowszego `boto3` z najstarszym `botocore`.
+## Original development order
 
-Aktualny parser i `versions.py` obsługują uproszczony format projektu,
-więc nie wystarczą do danych PyPI. Potrzebny będzie osobny loader/adapter
-(np. `pypi_loader.py`) oraz rozszerzenie porównywania wersji i dopasowywania
-wymagań. Oryginalny loader powinien nadal walidować format z poziomu 4.
+1. Complete validation for 4.1, run benchmark 4.5, and prepare the
+   4-point report.
+2. Add state persistence and change plans, then install into existing
+   states (6.1).
+3. Add removal with autoremove (6.2) and explanations (6.3).
+4. Run the scenario for 6.4.
+5. Add updates (8.1), then analyze conflicts and the Pareto front (8.2).
+6. Add PyPI support and run the scenario for 8.3.
 
-## Proponowana kolejność dalszej pracy
+Submission at the selected level requires source code and run instructions,
+sample inputs, and a report with results and commentary. The assignment
+also requires presenting the project to the instructor. Automated tests
+are recommended. The proof of NP-completeness at the end of the
+specification is optional.
 
-1. Domknąć walidację 4.1, wykonać pomiary 4.5 i zebrać raport dla progu 4.
-2. Dodać zapis stanu i plan zmian, następnie instalację do istniejącego stanu (6.1).
-3. Dodać usuwanie z `autoremove` (6.2) oraz wyjaśnianie sprzeczności (6.3).
-4. Przeprowadzić scenariusz 6.4.
-5. Dodać aktualizację 8.1, następnie analizę konfliktów i front Pareto 8.2.
-6. Obsłużyć dane PyPI i wykonać scenariusz 8.3.
+## Original development checks
 
-Do oddania na wybranym progu potrzebne są kod z instrukcją uruchomienia,
-przykładowe pliki wejściowe oraz raport z wynikami i komentarzem. Projekt
-trzeba także zaprezentować prowadzącemu. Zalecane testy automatyczne są już
-w [tests](tests). Dowód NP-zupełności z końca PDF jest zadaniem dodatkowym,
-nieobowiązkowym.
+The original unit test suite covered invalid inputs, examples from the
+specification, and comparisons of the solver and verifier with exhaustive
+enumeration on small repositories. Its only third-party dependency was
+`z3-solver`.
 
-## Testy
-
-```powershell
+```text
 python -m unittest discover -s tests -v
 ```
 
-Testy obejmują walidację błędnych plików, przykłady z instrukcji oraz
-porównanie solvera i weryfikatora z wyczerpującym przeglądem stanów małych
-repozytoriów. Nie wymagają dodatkowych bibliotek poza `z3-solver`.
+The original style and strict type-checking setup used `pyproject.toml`
+and ignored missing type declarations in the external Z3 dependency.
 
-Sprawdzenie stylu i typów (konfiguracja w `pyproject.toml`):
-
-```powershell
+```text
 python -m pip install -r requirements-dev.txt
 python -m ruff check package_manager tests
 python -m ruff format --check package_manager tests
 python -m mypy
 ```
 
-Kontrola typów pomija brak deklaracji typów w zewnętrznej bibliotece Z3;
-pozostałe moduły projektu są sprawdzane w trybie strict.
+For the current test suite and commands, see the
+[implementation guide](package_manager/README.md).

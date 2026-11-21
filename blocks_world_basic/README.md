@@ -1,59 +1,59 @@
-# Blocks World — wariant podstawowy (4 punkty)
+# Blocks World – basic version (4 points)
 
-Projekt realizuje punkty 1–4 z instrukcji: wczytywanie i walidację układów,
-DFS z backtrackingiem i limitami, niezależną weryfikację planu oraz powtarzalne
-eksperymenty dla `N=3..15`.
+The project covers tasks 1–4 of the assignment. It reads and validates block
+arrangements, searches with bounded depth-first search and backtracking,
+verifies plans independently, and runs reproducible experiments for `N=3..15`.
 
-## Struktura
+## Project layout
 
-- `src/state.py` — klasa stanu, walidacja układów i reguły ruchów,
-- `src/input_reader.py` — wczytywanie stanu początkowego i docelowego,
-- `src/verifier.py` — sprawdzanie całej sekwencji ruchów,
-- `src/dfs.py` — DFS z backtrackingiem, statystyki i limity,
-- `src/experiments.py` — losowe przypadki, pomiary i raport Markdown/CSV,
-- `src/main.py` — interfejs programu,
-- `tests/` — automatyczne testy jednostkowe,
-- `examples/` — przykładowe dane z instrukcji.
+- `src/state.py` holds the state class, arrangement validation, and move rules.
+- `src/input_reader.py` reads the initial and goal states.
+- `src/verifier.py` checks the complete sequence of moves.
+- `src/dfs.py` implements DFS with backtracking, statistics, and limits.
+- `src/experiments.py` generates random cases and records measurements and results.
+- `src/main.py` provides the command-line entry point.
+- `tests/` contains automated unit tests.
+- `examples/` contains sample inputs from the assignment.
 
-Przykłady obejmują prosty problem dla `N=3`, problem referencyjny dla `N=5`,
-większy problem dla `N=8` oraz niepoprawny układ z cyklem demonstrujący walidację.
+The examples include a simple `N=3` problem, a reference `N=5` problem,
+a larger `N=8` problem, and an invalid cyclic arrangement for demonstrating
+input validation.
 
-## Uruchomienie
+## Running the program
 
-W folderze projektu:
+Run this command from the project directory.
 
 ```powershell
 py -3 -m src.main
 ```
 
-Można też wskazać plik bez zmieniania kodu:
+You can also supply an input file on the command line.
 
 ```powershell
 py -3 -m src.main examples/simple_3.txt
 ```
 
-Plik wejściowy wybiera się przez zmianę stałej `INPUT_FILE` w `src/main.py`,
-na przykład:
+To change the default input, edit the `INPUT_FILE` constant in `src/main.py`.
 
 ```python
 INPUT_FILE = "examples/simple_3.txt"
 ```
 
-Testy:
+Run the unit tests with the following command.
 
 ```powershell
 py -3 -m unittest discover -s tests -v
 ```
 
-`main.py` uruchamia wyłącznie algorytm. DFS nie gwarantuje najkrótszej sekwencji;
-taki wymóg pojawia się dopiero w wariancie rozszerzonym na 6 punktów.
+`main.py` runs the solver for a single problem. DFS returns the first plan
+it finds. The extended 6-point version of the assignment requires a shortest
+plan.
 
-## Wyniki eksperymentów do ręcznego raportu
+## Experiment results for the report
 
 ```powershell
 py -3 -m src.experiments
 ```
 
-Polecenie zapisuje surowe dane 65 problemów do `results/results.csv`.
-Pełne sekwencje ruchów są zapisywane tylko
-dla `N` od 3 do 8.
+The command writes raw results for 65 problems to `results/results.csv`.
+It records full move sequences for `N` from 3 through 8.

@@ -1,27 +1,27 @@
-# DFS krok po kroku
+# Step-by-step DFS visualization
 
-Otwórz `dfs-krok-po-kroku.html` w przeglądarce. Nie potrzeba serwera,
-instalacji pakietów ani połączenia z internetem. Przy przenoszeniu wizualizacji
-skopiuj zarówno plik HTML, jak i sąsiadujący folder `dfs-krok-po-kroku/`.
+Open `dfs-krok-po-kroku.html` in a browser. The visualization runs offline
+directly from disk. To move it, copy both the HTML file and the adjacent
+`dfs-krok-po-kroku/` directory.
 
-## Podział plików
+## Files
 
-| Plik | Odpowiedzialność |
+| File | Purpose |
 | --- | --- |
-| `dfs-krok-po-kroku.html` | Struktura strony, przyciski i panele. |
-| `dfs-krok-po-kroku/styles.css` | Style, animacje, układ mobilny i ciemny motyw. |
-| `dfs-krok-po-kroku/sources.js` | Czytelne kopie kodu Pythona wyświetlanego w panelu. |
-| `dfs-krok-po-kroku/trace.js` | Stan przykładu i generowanie migawek przebiegu DFS. |
-| `dfs-krok-po-kroku/view.js` | Rysowanie klocków, podświetlanie kodu i aktualizacja paneli. |
-| `dfs-krok-po-kroku/app.js` | Krokowanie, odtwarzanie, zdarzenia i zapis pozycji. |
+| `dfs-krok-po-kroku.html` | Page structure, buttons, and panels. |
+| `dfs-krok-po-kroku/styles.css` | Styles, animations, mobile layout, and dark theme. |
+| `dfs-krok-po-kroku/sources.js` | Copies of the Python code displayed in the source panel. |
+| `dfs-krok-po-kroku/trace.js` | Example state and generation of DFS trace snapshots. |
+| `dfs-krok-po-kroku/view.js` | Block rendering, code highlighting, and panel updates. |
+| `dfs-krok-po-kroku/app.js` | Step controls, playback, event handling, and playback position storage. |
 
-Skrypty są ładowane w kolejności zapisanej w HTML i współdzielą obiekt
-`window.BlocksWorldDFS`. Zwykłe skrypty z `defer` pozwalają otwierać stronę
-bezpośrednio z dysku, bez ograniczeń dotyczących modułów i pobierania plików
-przez `fetch` dla adresów `file://`.
+The scripts load in the order specified in the HTML and share
+`window.BlocksWorldDFS`. Classic scripts with `defer` support direct opening
+via `file://` and avoid the browser restrictions that affect modules and
+`fetch` on local files.
 
-## Edycja kodu przykładu
+## Editing the example code
 
-`sources.js` przechowuje statyczne kopie Pythona, a nie odczytuje plików z `src/`.
-Numery linii użyte w `trace.js` wskazują na te kopie. Przy zmianie ich treści
-zaktualizuj również odpowiadające im numery linii w przebiegu.
+`sources.js` contains static copies of the Python code. The line numbers in
+`trace.js` refer to those copies. Update the corresponding trace line
+numbers whenever you edit the displayed code.

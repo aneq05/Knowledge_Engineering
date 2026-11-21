@@ -1,12 +1,13 @@
-# Wumpus World — gra i wizualizacja
+# Wumpus World game and visualizer
 
-Interaktywna plansza korzysta bezpośrednio z `World.execute()` w `world.py`,
-agenta z `agent.py` oraz rzeczywistego wnioskowania Clingo z `inference.py`
-i `wumpus_kb.lp`. Przeglądarka rysuje stan przekazany przez lokalny serwer Pythona.
+The interactive board uses `World.execute()` from `world.py`, the agent
+from `agent.py`, and Clingo inference from `inference.py` and
+`wumpus_kb.lp`. The browser renders the state supplied by a local Python
+server.
 
-## Uruchomienie
+## Running the game
 
-W terminalu w głównym katalogu projektu:
+Run the following commands from the repository root.
 
 ```powershell
 py -3 -m venv wumpus_world/.venv
@@ -14,58 +15,64 @@ wumpus_world/.venv/Scripts/python.exe -m pip install -r wumpus_world/requirement
 wumpus_world/.venv/Scripts/python.exe wumpus_world/visualizer.py
 ```
 
-Jeśli środowisko jest już przygotowane, wystarczy ostatnie polecenie.
-Gra otworzy się w przeglądarce pod `http://127.0.0.1:8765`.
-Serwer zatrzymasz przez **Ctrl+C** w terminalu. Nie otwieraj samego `index.html`:
-potrzebuje połączenia z Pythonem. Serwer jest dostępny tylko na tym komputerze;
-otwarte karty współdzielą jedną wyprawę.
+Once the environment is set up, run the final command to start the game.
+It opens at `http://127.0.0.1:8765`. Press **Ctrl+C** in the terminal to stop
+the server. Open the game through the Python server so the page can access
+the game state. The server is available only on your computer, and open
+tabs share one game session.
 
-Opcje: `--no-browser` wyłącza automatyczne otwarcie przeglądarki,
-`--port 8766` zmienia port, `--port 0` wybiera wolny port.
+Use `--no-browser` to suppress automatic browser launch, `--port 8766` to
+choose a port, or `--port 0` to let the system choose an available port.
 
-## Co można zrobić
+## Controls and features
 
-- Grać ręcznie: **↑** krok naprzód, **← / →** obrót, **G** podnieś,
-  **F** strzel, **E** wyjdź. **Spacja** uruchamia i zatrzymuje pokaz agenta.
-- Wykonywać pojedyncze akcje agenta lub obserwować animowaną rozgrywkę.
-- Przełączać **wiedzę agenta** i **pełną mapę**. Podgląd nie zmienia wiedzy agenta.
-- Kliknąć pole, aby zobaczyć opis; kliknięcie nie przemieszcza postaci.
-- Czytać percepcje, wnioski, aktualny cel, pozostały plan i fakty ASP.
-- Cofać akcje wraz z wiedzą, strzałami, złotem i planem. Cofnięcie jest pomocą
-  edukacyjną i przywraca stan sprzed akcji, nie jest akcją w regułach Wumpusa.
-- Wybrać planszę AIMA, przykład porównania ryzyka albo losową jaskinię z ziarnem.
-- Porównywać strategie ostrożną, heurystycznego ryzykanta i zliczanie modeli.
-  Ustawienia planszy i strategii stosuje przycisk **Nowa wyprawa**.
+- Play manually using **↑** to move forward, **← / →** to turn, **G** to
+  grab, **F** to shoot, and **E** to exit. **Space** starts or pauses agent
+  playback.
+- Execute one agent action at a time or watch an animated run.
+- Switch between **Wiedza agenta** (agent knowledge) and **Pełna mapa**
+  (full map). The choice affects only the player's view.
+- Click a cell to read its description. Movement uses the game controls.
+- Inspect percepts, inferences, the current goal, the remaining plan, and ASP
+  facts.
+- Undo an action to restore the prior state, including the agent's
+  knowledge, arrows, gold, and plan.
+- Choose the AIMA board, the risk-comparison board, or a seeded random cave.
+- Compare the cautious, risk-taking heuristic, and model-counting strategies.
+  Select **Nowa wyprawa** (new expedition) to apply the board and strategy
+  settings.
 
-## Jak czytać grę
+## Reading the board
 
-Wejście `(1, 1)` jest w lewym dolnym rogu. Agent zaczyna zwrócony na wschód.
-Powiew oznacza jamę na co najmniej jednym polu sąsiadującym krawędzią,
-smród — Wumpusa na sąsiednim polu, a blask — złoto na bieżącym polu.
-Martwy Wumpus nadal śmierdzi, zgodnie z implementacją projektu.
+The entrance `(1, 1)` is in the lower-left corner. The agent starts facing
+east. A breeze indicates a pit in at least one orthogonally adjacent cell,
+a stench indicates a Wumpus in an adjacent cell, and glitter indicates gold
+in the current cell. A dead Wumpus continues to produce a stench in this
+implementation.
 
-Pola bezpieczne są bezpieczne we wszystkich modelach zgodnych z obserwacjami.
-„Możliwa jama / Wumpus” oznacza, że zagrożenie występuje w przynajmniej jednym
-takim modelu; nie jest to potwierdzenie jego obecności. Dalej od odwiedzonego
-obszaru położenie jam pozostaje nieznane.
+A safe cell is safe in every model consistent with the observations. A
+possible pit or Wumpus appears in at least one such model. The locations
+of pits farther from the explored area remain unknown.
 
-Każda akcja kosztuje 1 punkt, oddana strzała dodatkowo 10. Śmierć kosztuje 1000,
-a każda sztuka złota daje 1000 dopiero po wyjściu z jaskini na `(1, 1)`.
-Strzała leci w kierunku patrzenia do ściany i zatrzymuje się na pierwszym żywym
-Wumpusie. Wyjście bez złota też kończy grę. Losowa plansza nie musi być wygrywalna.
+Each action costs 1 point, firing an arrow costs an additional 10, and death
+costs 1,000. Each piece of gold earns 1,000 points once the agent exits the
+cave at `(1, 1)`. An arrow travels in the facing direction until it reaches
+a wall or hits the first living Wumpus. Exiting without gold also ends the
+game. Some random boards have no winning route.
 
-Proponowana nauka: wykonaj kilka kroków agenta na planszy AIMA, porównaj
-percepcje z bezpiecznymi polami, włącz pełną mapę, a potem dokończ wyprawę.
-Na planszy porównania ryzyka uruchom osobno obie strategie ryzykowne:
-zliczanie modeli uwzględnia różne prawdopodobieństwa jam.
+To learn the game, step through a few actions on the AIMA board, compare the
+percepts with the marked safe cells, reveal the full map, and finish the
+expedition. Then try each risk-taking strategy separately on the
+risk-comparison board. Model counting accounts for differences in pit
+probabilities.
 
-## Testy
+## Tests and terminal simulation
 
 ```powershell
 wumpus_world/.venv/Scripts/python.exe -m unittest discover -s wumpus_world -p "test_visualizer.py" -v
 ```
 
-Dotychczasowa symulacja terminalowa pozostaje dostępna:
+Run the AIMA simulation in the terminal with the following command.
 
 ```powershell
 wumpus_world/.venv/Scripts/python.exe wumpus_world/simulate.py --aima
