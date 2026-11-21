@@ -1,149 +1,81 @@
 # Inżynieria wiedzy
 
-> Repozytorium projektów, eksperymentów i notatek z przedmiotu **Inżynieria
-> wiedzy**.
+Projekty i materiały z przedmiotu **Inżynieria wiedzy**. Repozytorium obejmuje
+planowanie, wnioskowanie logiczne, rozwiązywanie zależności oraz modelowanie
+probabilistyczne.
 
-To repo będzie rozwijane przez cały semestr — kolejne laboratoria i projekty
-będą pojawiać się tutaj jako osobne katalogi. Oprócz kodu znajdują się tu
-raporty, materiały pomocnicze, przykładowe dane oraz interaktywne wizualizacje,
-które pomagają prześledzić działanie algorytmów krok po kroku.
+## Projekty
 
-## Zawartość
-
-| Projekt | Temat | Najważniejsze elementy |
+| Projekt | Zadanie | Metody i narzędzia |
 | --- | --- | --- |
-| [`blocks_world_basic/`](./blocks_world_basic/) | **Świat klocków** | walidacja stanów, DFS z backtrackingiem, weryfikacja planu, eksperymenty i wizualizacja |
-| [`wumpus_world/`](./wumpus_world/) | **Świat Wumpusa** | agent, wnioskowanie w Clingo/ASP, strategie ryzyka, gra i wizualizator webowy |
-| [`wumpus_world/repo_project_2/`](./wumpus_world/repo_project_2/) | **Menedżer pakietów** | przykładowe repozytoria pakietów, zależności, konflikty i dane do projektu 2 |
+| [Projekt 1 – Świat klocków](blocks_world_basic/README.md) | Znalezienie planu przejścia od układu początkowego do docelowego | DFS z nawrotami, weryfikacja planu |
+| [Świat Wumpusa](wumpus_world/README.md) | Planowanie działań agenta na podstawie obserwacji w jaskini | ASP, Clingo, porównanie strategii ryzyka |
+| [Projekt 2 – Menedżer pakietów](wumpus_world/repo_project_2/README.md) | Dobór wersji pakietów spełniających żądania, zależności i konflikty | Z3, optymalizacja leksykograficzna, niezależny weryfikator |
+| [Projekt 3 – Sieć bayesowska studentów](sieci_bayesowskie/projekt_3/README.md) | Uczenie modelu z niepełnych danych i odpowiadanie na zapytania probabilistyczne | pgmpy, MLE, EM, Hill Climb z BIC, zapytania P i MAP |
 
-### 1. Świat klocków
+Każdy przykład uruchamiania zaczyna się w głównym katalogu repozytorium
+i korzysta z PowerShella oraz Pythona 3.11.
 
-Implementacja podstawowego problemu planowania: z układu początkowego trzeba
-przejść do układu docelowego, wykonując poprawne ruchy. Projekt zawiera:
+## Świat klocków
 
-- model stanu oraz reguły przenoszenia klocków,
-- sprawdzanie niepoprawnych danych wejściowych, między innymi cykli i
-  nieistniejących klocków,
-- przeszukiwanie DFS z backtrackingiem,
-- niezależną weryfikację znalezionego planu,
-- testy jednostkowe i eksperymenty dla różnych rozmiarów problemu,
-- interaktywną wizualizację DFS „krok po kroku”.
-
-Szczegóły uruchamiania znajdują się w
-[`blocks_world_basic/README.md`](./blocks_world_basic/README.md).
-
-### 2. Świat Wumpusa
-
-Interaktywna implementacja klasycznego środowiska z książki Russella i Norviga.
-Agent otrzymuje wyłącznie percepcje ze świata i na ich podstawie buduje wiedzę
-o bezpiecznych oraz potencjalnie niebezpiecznych polach. W projekcie można:
-
-- grać ręcznie albo obserwować działanie agenta,
-- porównywać strategie ostrożną, ryzykowną i opartą na zliczaniu modeli,
-- uruchamiać świat AIMA, scenariusz porównania ryzyka lub losową jaskinię,
-- śledzić percepcje, wnioski, plan i fakty ASP,
-- wykonywać symulacje seryjne i zbierać statystyki.
-
-Szczegółowy opis obsługi, skrótów klawiszowych i testów jest w
-[`wumpus_world/README.md`](./wumpus_world/README.md).
-
-### 3. Menedżer pakietów
-
-Katalog [`repo_project_2/`](./wumpus_world/repo_project_2/) zawiera dane
-wykorzystywane w projekcie dotyczącym rozwiązywania zależności pakietów:
-
-- przykładowy opis repozytorium w JSON,
-- przykładowy stan środowiska,
-- przykładowe żądania instalacji,
-- wygenerowane zbiory repozytoriów o różnych rozmiarach,
-- treść instrukcji projektu w pliku PDF.
-
-## Szybki start
-
-### Wymagania
-
-- Python **3.10+**,
-- PowerShell lub inny terminal,
-- `clingo` **5.7–5.x** dla projektu Świat Wumpusa.
-
-Najbezpieczniej używać osobnego środowiska wirtualnego dla każdego projektu,
-ponieważ tylko Świat Wumpusa ma obecnie dodatkową zależność Pythonową.
-
-### Świat klocków
+Program wczytuje i sprawdza oba układy klocków, wyszukuje sekwencję legalnych
+ruchów i sprawdza ją niezależnym weryfikatorem. Katalog zawiera przykłady
+poprawnych i błędnych stanów, eksperymenty oraz wizualizację DFS krok po kroku.
+[Raport](blocks_world_basic/reports/raport.md) · [Wizualizacja](blocks_world_basic/other_resources/visualizations/dfs-krok-po-kroku.html)
 
 ```powershell
-cd blocks_world_basic
-py -3 -m src.main examples/simple_3.txt
-py -3 -m unittest discover -s tests -v
+Set-Location blocks_world_basic
+py -3.11 -m src.main examples/simple_3.txt
 ```
 
-Interaktywną wizualizację można otworzyć bez serwera:
+## Świat Wumpusa
+
+Agent używa obserwacji oraz reguł ASP do wnioskowania o bezpiecznych polach
+i zagrożeniach. Można grać ręcznie, obserwować decyzje agenta albo porównać
+strategie ostrożną, heurystyczną i opartą na zliczaniu modeli.
+[Instrukcja wizualizatora](wumpus_world/README.md) · [Notatnik laboratoryjny](wumpus_world/lab.ipynb)
 
 ```powershell
-start other_resources/visualizations/dfs-krok-po-kroku.html
+Set-Location wumpus_world
+py -3.11 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe visualizer.py
 ```
 
-### Świat Wumpusa
+Plansza działa pod adresem `http://127.0.0.1:8765`. Symulację w terminalu
+można uruchomić poleceniem `.\.venv\Scripts\python.exe simulate.py --aima`.
+
+## Menedżer pakietów
+
+Instalator wczytuje repozytorium JSON oraz listę żądań, po czym wybiera wersje
+pakietów dla pustego środowiska. Uwzględnia zależności alternatywne i konflikty,
+optymalizuje dobór pakietów w Z3 i weryfikuje znalezione rozwiązanie.
+W katalogu są dane przykładowe i zestaw `k26` do eksperymentów.
+[Zakres projektu i aktualny stan](wumpus_world/repo_project_2/README.md) · [Kodowanie bazy wiedzy](wumpus_world/repo_project_2/kodowanie_bazy_wiedzy.md)
 
 ```powershell
-py -3 -m venv .venv
-.venv/Scripts/python.exe -m pip install -r requirements.txt
-.venv/Scripts/python.exe visualizer.py
+Set-Location wumpus_world/repo_project_2
+py -3.11 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m package_manager repo_example.json requests_example.txt
 ```
 
-Po uruchomieniu wizualizator będzie dostępny pod adresem
-`http://127.0.0.1:8765`. Alternatywnie można uruchomić symulację terminalową:
+## Sieć bayesowska studentów
+
+Program wczytuje zestaw `k26`, uczy sieć z danych z brakami i ocenia ją na
+oddzielnym zbiorze. Wariant na 4 pkt obejmuje model ekspercki, zapytania
+o prawdopodobieństwo i MAP oraz ocenę predykcji. Wariant na 6 pkt dodatkowo
+porównuje estymatory MLE i EM oraz trzy metody uczenia struktury. Program
+zapisuje raport Markdown i odpowiedzi w JSON-ie.
+[Opis kodu](sieci_bayesowskie/projekt_3/OPIS_KODU.md) · [Wyniki dla 4 pkt](sieci_bayesowskie/projekt_3/results/4_pkt/report.md) · [Wyniki dla 6 pkt](sieci_bayesowskie/projekt_3/results/6_pkt/report.md) · [Wprowadzenie do pgmpy](sieci_bayesowskie/pgmpy_intro.ipynb)
+
+Opcja `--output` kieruje nowe wyniki do dwóch osobnych katalogów.
 
 ```powershell
-.venv/Scripts/python.exe simulate.py --aima
+Set-Location sieci_bayesowskie/projekt_3
+py -3.11 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install "pgmpy==1.1.2"
+$env:PYTHONHASHSEED = "0"
+.\.venv\Scripts\python.exe -m student_bn --level 4 --output results/local_4_pkt
+.\.venv\Scripts\python.exe -m student_bn --level 6 --output results/local_6_pkt
 ```
-
-## Organizacja repozytorium
-
-```text
-.
-├── blocks_world_basic/
-│   ├── src/                 # implementacja algorytmu
-│   ├── tests/               # testy automatyczne
-│   ├── examples/            # dane wejściowe
-│   ├── reports/             # raporty i notatki
-│   └── other_resources/     # wizualizacje i materiały dodatkowe
-├── wumpus_world/
-│   ├── agent.py             # agent i jego wiedza
-│   ├── inference.py         # wnioskowanie
-│   ├── world.py             # środowisko
-│   ├── visualizer.py        # lokalny serwer gry
-│   └── repo_project_2/      # dane projektu menedżera pakietów
-└── requirements.txt
-```
-
-## Podejście do projektów
-
-Wspólnym motywem repozytorium jest reprezentowanie wiedzy o świecie i
-wykorzystywanie jej do podejmowania decyzji:
-
-1. **modelowanie** — stan, reguły i ograniczenia problemu,
-2. **wnioskowanie lub przeszukiwanie** — DFS, backtracking, ASP i Clingo,
-3. **weryfikacja** — testy, niezależne sprawdzanie planów i eksperymenty,
-4. **wizualizacja** — prezentowanie wyników w sposób łatwy do prześledzenia.
-
-## Status
-
-| Obszar | Status |
-| --- | --- |
-| Świat klocków — wariant podstawowy | gotowy |
-| Świat Wumpusa — agent i wizualizator | gotowy |
-| Menedżer pakietów — dane do projektu | w toku |
-| Kolejne projekty z zajęć | planowane |
-
-## Rozwój repozytorium
-
-Nowe projekty będą dodawane w osobnych katalogach. Każdy z nich powinien mieć
-własny README z krótkim opisem, instrukcją uruchomienia, testami i informacją o
-strukturze plików. Dzięki temu główny README pozostanie mapą repozytorium, a
-szczegóły nie będą mieszać się z opisem pozostałych projektów.
-
----
-
-Repozytorium ma charakter edukacyjny i będzie na bieżąco uzupełniane wraz z
-kolejnymi tematami realizowanymi na zajęciach.
