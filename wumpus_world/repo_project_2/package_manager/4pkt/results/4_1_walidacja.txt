@@ -1,0 +1,38 @@
+# 4.1 wczytywanie i walidacja
+
+Każdy niepoprawny plik musi zostać odrzucony z komunikatem wskazującym miejsce błędu.
+
+## niepoprawny JSON
+  komunikat: repo.json:1:14: Expecting value
+## brak pola packages
+  komunikat: repo.json: $.packages: brak wymaganego pola.
+## nieznane pole
+  komunikat: repo.json: $.foo: nieznane pole.
+## requires nie jest listą
+  komunikat: repo.json: packages['a'].versions['1.0'].requires: oczekiwano listy napisów.
+## niepoprawna nazwa
+  komunikat: repo.json: packages['bad name!']: Niepoprawna nazwa pakietu: 'bad name!'
+## niepoprawna wersja
+  komunikat: repo.json: packages['a'].versions['1.x']: Niepoprawna wersja: '1.x'
+## niepoprawny operator
+  komunikat: repo.json: packages['a'].versions['1.0'].requires[0]: Niepoprawne ograniczenie wersji w wymaganiu 'b =>1'
+## wersje 1.0 i 1.0.0
+  komunikat: repo.json: packages['a'].versions['1.0.0']: wersja powtarza '1.0'.
+## pakiety Foo_Bar i foo-bar
+  komunikat: repo.json: packages['foo-bar']: powtórzony pakiet po normalizacji nazwy: 'foo-bar'.
+## pakiet wymaga samego siebie
+  komunikat: repo.json: packages['a'].versions['1.0'].requires[0]: pakiet nie może wymagać samego siebie.
+## pakiet konfliktuje z sobą
+  komunikat: repo.json: packages['a'].versions['1.0'].conflicts[0]: pakiet nie może konfliktować z samym sobą.
+## powtórzony klucz obiektu
+  komunikat: repo.json: packages['a'].versions['1.0']: powtórzony klucz '1.0'.
+## pusty obiekt versions
+  komunikat: repo.json: packages['a'].versions: pakiet musi mieć co najmniej jedną wersję.
+## błąd w drugim wymaganiu
+  komunikat: repo.json: packages['app'].versions['2.0'].requires[1]: Niepoprawne ograniczenie wersji w wymaganiu 'x =>1'
+
+Plik z BOM został poprawnie wczytany.
+Plik żądań, błędna linia 4: requests.txt:4: Niepoprawne ograniczenie wersji w wymaganiu 'lib =>1'
+
+Czas: 0.05 s
+Wynik: PASS

@@ -1,0 +1,13 @@
+# 4.3 instalacja do pustego środowiska
+
+żądania | wynik | kryteria (przest. żądanych, liczba pakietów, przest. pozostałych) | weryfikacja
+['app'] | {'app': '2.0', 'lib': '2.0', 'util': '2.0'} | (0, 3, 0) | OK
+['tool'] | {'json-slow': '1.0', 'lib': '1.0', 'tool': '1.1'} | (0, 3, 2) | OK
+['app', 'tool'] | {'app': '1.0', 'json-slow': '1.0', 'lib': '1.0', 'tool': '1.1'} | (1, 4, 2) | OK
+['app', 'legacy'] | {'app': '1.0', 'legacy': '1.0', 'lib': '1.0'} | (1, 3, 2) | OK
+['app==2.0', 'tool'] | brak rozwiązania | - | brak stanu do sprawdzenia
+
+Wszystkie wyniki zgodne z tabelą z treści zadania.
+
+Czas: 0.05 s
+Wynik: PASS

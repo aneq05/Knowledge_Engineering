@@ -1,7 +1,7 @@
+import z3
+
 from collections.abc import Sequence
 from dataclasses import dataclass
-
-import z3
 
 from .knowledge_base import KnowledgeBase, build_knowledge_base
 from .models import EnvironmentState, InstalledPackage, Repository, Requirement
@@ -38,13 +38,16 @@ def _costs(
     requested_costs: list[z3.ArithRef] = []
     other_costs: list[z3.ArithRef] = []
     package_costs: list[z3.ArithRef] = []
+
     for package, versions in repository.packages.items():
         ordered_versions = sorted(versions, key=version_key, reverse=True)
         costs = requested_costs if normalize_name(package) in requested_names else other_costs
+
         for rank, version in enumerate(ordered_versions):
             selected = kb.variables[package, version]
             costs.append(z3.If(selected, rank, 0))
             package_costs.append(z3.If(selected, 1, 0))
+
     return _sum_costs(requested_costs), _sum_costs(package_costs), _sum_costs(other_costs)
 
 
@@ -52,19 +55,32 @@ def _read_state(
     model: z3.ModelRef, kb: KnowledgeBase, requested_names: set[str]
 ) -> EnvironmentState:
     installed: dict[str, InstalledPackage] = {}
+
     for (package, version), variable in kb.variables.items():
         if z3.is_true(model.eval(variable, model_completion=True)):
             installed[package] = InstalledPackage(
                 package, version, manual=normalize_name(package) in requested_names
             )
+
     return EnvironmentState(installed)
 
 
 def install(repository: Repository, requests: Sequence[Requirement]) -> InstallationResult | None:
-    kb = build_knowledge_base(repository)
+    return solve(repository, build_knowledge_base(repository), requests)
+
+
+def solve(
+    repository: Repository,
+    kb: KnowledgeBase,
+    requests: Sequence[Requirement],
+    timeout_ms: int | None = None,
+) -> InstallationResult | None:
     requested_names = {normalize_name(request.package) for request in requests}
     optimizer = z3.Optimize()
     optimizer.set(priority="lex")
+
+    if timeout_ms is not None:
+        optimizer.set("timeout", timeout_ms)
     for axiom in kb.axioms:
         optimizer.add(axiom.formula)
     for request in requests:
@@ -86,4 +102,5 @@ def install(repository: Repository, requests: Sequence[Requirement]) -> Installa
     if errors:
         raise RuntimeError("Solver zwrócił niepoprawny stan:\n" + "\n".join(errors))
     values = [model.eval(cost, model_completion=True).as_long() for cost in costs]
+
     return InstallationResult(state, values[0], values[1], values[2])

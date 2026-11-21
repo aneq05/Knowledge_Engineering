@@ -1,0 +1,12 @@
+Podsumowanie sprawdzenia progu 6
+Wersja Z3: 5.3.3
+Ostrzeżenia z danych (wymagania bez pasującej wersji): 134
+Łączny czas: 29.6 s
+
+[PASS] 6.1 pusty stan = stary install
+[PASS] 6.1 install app==2.0 do state_example.txt
+[PASS] 6.2 usuwanie (remove, autoremove)
+[PASS] 6.3 wyjaśnianie braku rozwiązania
+[PASS] 6.4 scenariusz losowy na repo_200.json
+
+Wynik: 5 z 5 sprawdzeń przeszło.

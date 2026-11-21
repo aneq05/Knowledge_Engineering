@@ -29,7 +29,7 @@ def parse_dependency(text: str) -> Dependency:
 
 def _parse_constraints(rest: str, requirement: str) -> tuple[VersionConstraint, ...]:
     constraints: list[VersionConstraint] = []
-    while rest.strip():
+    while rest.strip(): # odczytuje kolejne operatory i wersje w pętli bo może ich być kilka
         rest = rest.lstrip()
         match = _CONSTRAINT.match(rest)
         if match is None:
@@ -40,7 +40,7 @@ def _parse_constraints(rest: str, requirement: str) -> tuple[VersionConstraint, 
         rest = _after_constraint(rest[match.end() :], requirement)
     return tuple(constraints)
 
-
+# sprawdzenie poprawności separatorów między warunkami
 def _after_constraint(rest: str, requirement: str) -> str:
     if not rest:
         return ""

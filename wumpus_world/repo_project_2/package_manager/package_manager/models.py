@@ -1,13 +1,10 @@
 import operator
+
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import StrEnum
-from typing import TypeAlias
 
-from .versions import VersionKey, version_key
-
-JsonValue: TypeAlias = str | int | float | bool | None | list["JsonValue"] | dict[str, "JsonValue"]
-
+from .versions import version_key
 
 class ComparisonOperator(StrEnum):
     EQ = "=="
@@ -18,7 +15,9 @@ class ComparisonOperator(StrEnum):
     GE = ">="
 
 
-_COMPARISONS: dict[ComparisonOperator, Callable[[VersionKey, VersionKey], bool]] = {
+_COMPARISONS: dict[
+    ComparisonOperator, Callable[[tuple[int, ...], tuple[int, ...]], bool]
+] = {
     ComparisonOperator.EQ: operator.eq,
     ComparisonOperator.NE: operator.ne,
     ComparisonOperator.LT: operator.lt,
@@ -73,7 +72,7 @@ class PackageVersion:
 @dataclass
 class Repository:
     packages: dict[str, dict[str, PackageVersion]] = field(default_factory=dict)
-    meta: JsonValue = field(default_factory=dict)
+    meta: object = field(default_factory=dict)
 
 
 @dataclass(frozen=True)

@@ -1,0 +1,64 @@
+# 6.3 wyjaśnianie braku rozwiązania
+
+W danych grupy 26 (N = 10..1000) wszystkie żądania miały rozwiązanie, więc wyjaśnienia pokazano na przykładzie z treści zadania i trzech skonstruowanych przypadkach.
+
+## app==2.0 + tool (przykład z treści zadania)
+Minimalny sprzeczny podzbiór:
+  - tool==1.1 wymaga lib <2.0
+  - app==2.0 wymaga lib >=2.0
+  - tool==1.0 wymaga lib <2.0
+  - lib: co najwyżej jedna wersja
+  - żądanie użytkownika: tool
+  - żądanie użytkownika: app ==2.0
+Sprawdzenie minimalności (niezależnym solverem):
+  sprzeczność całego rdzenia: tak
+  bez „tool==1.1 wymaga lib <2.0” -> spełnialny (OK)
+  bez „app==2.0 wymaga lib >=2.0” -> spełnialny (OK)
+  bez „tool==1.0 wymaga lib <2.0” -> spełnialny (OK)
+  bez „lib: co najwyżej jedna wersja” -> spełnialny (OK)
+  bez „żądanie użytkownika: tool” -> spełnialny (OK)
+  bez „żądanie użytkownika: app ==2.0” -> spełnialny (OK)
+
+## legacy + web==2.0 (legacy blokuje util >=2.0, a web==2.0 go wymaga)
+Minimalny sprzeczny podzbiór:
+  - żądanie użytkownika: web ==2.0
+  - żądanie użytkownika: legacy
+  - legacy==1.0 konfliktuje z util >=2.0 (blokuje util==2.0)
+  - web==2.0 wymaga util >=2.0
+Sprawdzenie minimalności (niezależnym solverem):
+  sprzeczność całego rdzenia: tak
+  bez „żądanie użytkownika: web ==2.0” -> spełnialny (OK)
+  bez „żądanie użytkownika: legacy” -> spełnialny (OK)
+  bez „legacy==1.0 konfliktuje z util >=2.0 (blokuje util==2.0)” -> spełnialny (OK)
+  bez „web==2.0 wymaga util >=2.0” -> spełnialny (OK)
+
+## json-fast + json-slow (json-fast konfliktuje z json-slow)
+Minimalny sprzeczny podzbiór:
+  - żądanie użytkownika: json-fast
+  - json-fast==2.0 konfliktuje z json-slow (blokuje json-slow==1.0)
+  - json-fast==1.0 konfliktuje z json-slow (blokuje json-slow==1.0)
+  - żądanie użytkownika: json-slow
+Sprawdzenie minimalności (niezależnym solverem):
+  sprzeczność całego rdzenia: tak
+  bez „żądanie użytkownika: json-fast” -> spełnialny (OK)
+  bez „json-fast==2.0 konfliktuje z json-slow (blokuje json-slow==1.0)” -> spełnialny (OK)
+  bez „json-fast==1.0 konfliktuje z json-slow (blokuje json-slow==1.0)” -> spełnialny (OK)
+  bez „żądanie użytkownika: json-slow” -> spełnialny (OK)
+
+## a==2.0 + b==2.0 (a 2.0 wymaga b <2.0)
+Minimalny sprzeczny podzbiór:
+  - żądanie użytkownika: b ==2.0
+  - żądanie użytkownika: a ==2.0
+  - b: co najwyżej jedna wersja
+  - a==2.0 wymaga b <2.0
+Sprawdzenie minimalności (niezależnym solverem):
+  sprzeczność całego rdzenia: tak
+  bez „żądanie użytkownika: b ==2.0” -> spełnialny (OK)
+  bez „żądanie użytkownika: a ==2.0” -> spełnialny (OK)
+  bez „b: co najwyżej jedna wersja” -> spełnialny (OK)
+  bez „a==2.0 wymaga b <2.0” -> spełnialny (OK)
+
+Dla spełnialnego żądania `app` wyjaśnienie nie jest tworzone (None).
+
+Czas: 0.08 s
+Wynik: PASS

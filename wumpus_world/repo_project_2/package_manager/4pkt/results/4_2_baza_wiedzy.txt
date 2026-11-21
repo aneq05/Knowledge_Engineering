@@ -1,0 +1,60 @@
+# 4.2 baza wiedzy A1-A3
+
+repo_example.json: 20 wersji (zmiennych), 24 aksjomatów
+  A1 (co najwyżej jedna wersja): 8
+  A2 (zależności): 13
+  A3 (konflikty): 3
+
+Wszystkie aksjomaty (etykieta -> formuła):
+  app: co najwyżej jedna wersja
+      AtMost((app==1.0, app==2.0), 1)
+  app==1.0 wymaga lib <2.0
+      Implies(app==1.0, Or(lib==1.0, lib==1.5))
+  app==2.0 wymaga lib >=2.0
+      Implies(app==2.0, Or(lib==2.0))
+  app==2.0 wymaga util
+      Implies(app==2.0, Or(util==1.0, util==2.0))
+  lib: co najwyżej jedna wersja
+      AtMost((lib==1.0, lib==1.5, lib==2.0), 1)
+  lib==1.5 wymaga util
+      Implies(lib==1.5, Or(util==1.0, util==2.0))
+  lib==2.0 wymaga util >=2.0
+      Implies(lib==2.0, Or(util==2.0))
+  util: co najwyżej jedna wersja
+      AtMost((util==1.0, util==2.0), 1)
+  tool: co najwyżej jedna wersja
+      AtMost((tool==1.0, tool==1.1), 1)
+  tool==1.0 wymaga lib <2.0
+      Implies(tool==1.0, Or(lib==1.0, lib==1.5))
+  tool==1.1 wymaga lib <2.0
+      Implies(tool==1.1, Or(lib==1.0, lib==1.5))
+  tool==1.1 wymaga json-fast | json-slow >=1.0
+      Implies(tool==1.1,
+        Or(json-fast==1.0, json-fast==2.0, json-slow==1.0))
+  json-fast: co najwyżej jedna wersja
+      AtMost((json-fast==1.0, json-fast==2.0), 1)
+  json-fast==1.0 konfliktuje z json-slow (blokuje json-slow==1.0)
+      Implies(json-fast==1.0, Not(json-slow==1.0))
+  json-fast==2.0 wymaga util >=2.0
+      Implies(json-fast==2.0, Or(util==2.0))
+  json-fast==2.0 konfliktuje z json-slow (blokuje json-slow==1.0)
+      Implies(json-fast==2.0, Not(json-slow==1.0))
+  legacy==1.0 konfliktuje z util >=2.0 (blokuje util==2.0)
+      Implies(legacy==1.0, Not(util==2.0))
+  web: co najwyżej jedna wersja
+      AtMost((web==1.0, web==2.0), 1)
+  web==1.0 wymaga util
+      Implies(web==1.0, Or(util==1.0, util==2.0))
+  web==2.0 wymaga util >=2.0
+      Implies(web==2.0, Or(util==2.0))
+  a: co najwyżej jedna wersja
+      AtMost((a==1.0, a==1.1, a==2.0), 1)
+  a==2.0 wymaga b <2.0
+      Implies(a==2.0, Or(b==1.0))
+  b: co najwyżej jedna wersja
+      AtMost((b==1.0, b==2.0), 1)
+  b==2.0 wymaga a <2.0
+      Implies(b==2.0, Or(a==1.0, a==1.1))
+
+Czas: 0.01 s
+Wynik: PASS

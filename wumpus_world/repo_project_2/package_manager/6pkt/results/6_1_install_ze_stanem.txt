@@ -1,0 +1,27 @@
+# 6.1 install app==2.0 do state_example.txt
+
+Stan początkowy (state_example.txt):
+  app 1.0 manual
+  json-slow 1.0
+  lib 1.0
+  tool 1.1 manual
+
+Żądanie: app==2.0
+
+Plan zmian:
+  instalacja util 2.0
+  podniesienie app 1.0 -> 2.0
+  podniesienie lib 1.0 -> 2.0
+  usunięcie tool 1.1
+Zgodne z treścią zadania.
+
+Stan końcowy:
+  app 2.0 manual
+  json-slow 1.0
+  lib 2.0
+  util 2.0
+
+Kryteria [1..5]: [1, 2, 0, 1, 0]
+
+Czas: 0.01 s
+Wynik: PASS

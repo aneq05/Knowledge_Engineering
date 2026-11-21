@@ -1,0 +1,12 @@
+Podsumowanie sprawdzenia progu 4
+Wersja Z3: 5.3.3
+Łączny czas: 28.8 s
+
+[PASS] 4.1 wczytywanie i walidacja
+[PASS] 4.2 baza wiedzy A1-A3
+[PASS] 4.3 instalacja do pustego środowiska
+[PASS] 4.4 weryfikacja bez solvera
+[PASS] 4.5 eksperyment na danych grupy 26
+[PASS] testy automatyczne (pytest)
+
+Wynik: 6 z 6 sprawdzeń przeszło.

@@ -1,7 +1,7 @@
 import warnings
-from dataclasses import dataclass, field
-
 import z3
+
+from dataclasses import dataclass, field
 
 from .models import Dependency, Repository, Requirement
 from .requirements_parser import normalize_name
@@ -47,7 +47,9 @@ class _KnowledgeBaseBuilder:
             for version in versions:
                 self.kb.variables[package, version] = z3.Bool(f"{package}=={version}")
 
-    def matching_versions(self, requirement: Requirement) -> list[z3.BoolRef]:
+    def matching_versions(
+        self, requirement: Requirement, source: str = ""
+    ) -> list[z3.BoolRef]:
         package = normalize_name(requirement.package)
         versions = self.repository.packages.get(package, {})
         matches = [
@@ -56,7 +58,10 @@ class _KnowledgeBaseBuilder:
             if requirement.matches(version)
         ]
         if not matches:
-            warnings.warn(f"Brak wersji pasującej do wymagania {str(requirement)!r}.", stacklevel=2)
+            origin = f"{source}: " if source else ""
+            warnings.warn(
+                f"{origin}brak wersji pasującej do wymagania {str(requirement)!r}.", stacklevel=2
+            )
         return matches
 
     def add_axioms(self) -> None:
@@ -66,6 +71,7 @@ class _KnowledgeBaseBuilder:
                 self.add_dependencies(package, version, details.requires)
                 self.add_conflicts(package, version, details.conflicts)
 
+    # A1
     def add_single_version_axiom(self, package: str) -> None:
         variables = [
             self.kb.variables[package, version] for version in self.repository.packages[package]
@@ -73,6 +79,7 @@ class _KnowledgeBaseBuilder:
         if len(variables) > 1:
             self.kb.add_axiom(f"{package}: co najwyżej jedna wersja", z3.AtMost(*variables, 1))
 
+    # A2
     def add_dependencies(
         self, package: str, version: str, dependencies: tuple[Dependency, ...]
     ) -> None:
@@ -80,18 +87,19 @@ class _KnowledgeBaseBuilder:
         for dependency in dependencies:
             options: list[z3.BoolRef] = []
             for alternative in dependency.alternatives:
-                options.extend(self.matching_versions(alternative))
+                options.extend(self.matching_versions(alternative, f"{package}=={version}"))
             # Or([]) jest fałszem: brak pasującej wersji wyklucza instalację.
             self.kb.add_axiom(
                 f"{package}=={version} wymaga {dependency}",
                 z3.Implies(selected, z3.Or(options)),
             )
 
+    # A3   
     def add_conflicts(self, package: str, version: str, conflicts: tuple[Requirement, ...]) -> None:
         selected = self.kb.variables[package, version]
         for conflict in conflicts:
-            for other in self.matching_versions(conflict):
+            for other in self.matching_versions(conflict, f"{package}=={version}"):
                 self.kb.add_axiom(
-                    f"{package}=={version} konfliktuje z {other}",
+                    f"{package}=={version} konfliktuje z {conflict} (blokuje {other})",
                     z3.Implies(selected, z3.Not(other)),
                 )

@@ -1,0 +1,15 @@
+# 6.1 pusty stan = stary install
+
+Pusty stan: nowe kryteria muszą odpowiadać kryteriom z 4.3 (dwa pierwsze są zerami).
+
+żądania | stary install (przest. żądanych, liczba pakietów, przest. pozostałych) | nowe kryteria [1..5]
+['app'] | (0, 3, 0) | [0, 0, 0, 3, 0]
+['tool'] | (0, 3, 2) | [0, 0, 0, 3, 2]
+['app', 'tool'] | (1, 4, 2) | [0, 0, 1, 4, 2]
+['app', 'legacy'] | (1, 3, 2) | [0, 0, 1, 3, 2]
+['app==2.0', 'tool'] | brak rozwiązania | brak rozwiązania
+
+Wszystkie zgodne.
+
+Czas: 0.11 s
+Wynik: PASS

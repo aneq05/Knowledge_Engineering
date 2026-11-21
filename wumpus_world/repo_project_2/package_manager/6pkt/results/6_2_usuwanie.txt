@@ -1,0 +1,38 @@
+# 6.2 usuwanie (remove, autoremove)
+
+## remove lib
+
+Plan zmian:
+  usunięcie app 1.0
+  usunięcie lib 1.0
+  usunięcie tool 1.1
+Zgodne z treścią zadania.
+Stan końcowy:
+  json-slow 1.0
+Kryteria [1..4]: [2, 0, 0, 3]
+
+## remove tool z autoremove
+
+Plan zmian:
+  usunięcie json-slow 1.0
+  usunięcie tool 1.1
+Zgodne z treścią zadania.
+Stan końcowy:
+  app 1.0 manual
+  lib 1.0
+Kryteria [1..4]: [0, 0, 0, 2]
+
+## remove tool bez autoremove
+
+Plan zmian:
+  usunięcie tool 1.1
+Zgodne z treścią zadania.
+Stan końcowy:
+  app 1.0 manual
+  json-slow 1.0
+  lib 1.0
+Kryteria [1..4]: [0, 0, 0, 1]
+
+
+Czas: 0.03 s
+Wynik: PASS

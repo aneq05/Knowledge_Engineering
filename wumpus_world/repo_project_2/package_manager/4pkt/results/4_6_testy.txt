@@ -1,0 +1,7 @@
+# testy automatyczne (pytest)
+
+..............................                                           [100%]
+30 passed in 11.40s
+
+Czas: 11.86 s
+Wynik: PASS

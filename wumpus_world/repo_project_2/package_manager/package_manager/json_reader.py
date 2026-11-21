@@ -1,12 +1,10 @@
 import json
+
 from dataclasses import dataclass
 from pathlib import Path
 
-from .models import JsonValue
-
-
 @dataclass
-class _ObjectPairs:
+class _ObjectPairs:     # do wykrywania powtórzonych kluczy JSON
     pairs: list[tuple[str, object]]
 
 
@@ -23,8 +21,9 @@ def _key_path(location: str, key: str) -> str:
     return f"{location}.{key}" if key.isidentifier() else f"{location}[{key!r}]"
 
 
-def _convert_object(value: _ObjectPairs, location: str) -> dict[str, JsonValue]:
-    result: dict[str, JsonValue] = {}
+# pary na słownik -> sprawdzenie duplikatów
+def _convert_object(value: _ObjectPairs, location: str) -> dict[str, object]:
+    result: dict[str, object] = {}
     for key, item in value.pairs:
         child_path = _key_path(location, key)
         if key in result:
@@ -33,7 +32,7 @@ def _convert_object(value: _ObjectPairs, location: str) -> dict[str, JsonValue]:
     return result
 
 
-def _convert_value(value: object, location: str) -> JsonValue:
+def _convert_value(value: object, location: str) -> object:
     if isinstance(value, _ObjectPairs):
         return _convert_object(value, location)
     if isinstance(value, list):
@@ -45,9 +44,9 @@ def _convert_value(value: object, location: str) -> JsonValue:
     raise ValueError(f"{location}: nieobsługiwana wartość JSON.")
 
 
-def read_json(path: str | Path) -> JsonValue:
+def read_json(path: str | Path) -> object:
     try:
-        text = Path(path).read_text(encoding="utf-8")
+        text = Path(path).read_text(encoding="utf-8-sig")
         raw: object = json.loads(
             text, object_pairs_hook=_ObjectPairs, parse_constant=_InvalidConstant
         )

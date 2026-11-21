@@ -1,0 +1,29 @@
+# 4.4 weryfikacja bez solvera
+
+Weryfikator (bez solvera) musi znaleźć wszystkie naruszenia w niepoprawnych stanach.
+
+## poprawny stan
+  brak naruszeń
+
+## brakujące zależności (app 2.0 samo)
+  naruszenie: app==2.0 wymaga lib >=2.0.
+  naruszenie: app==2.0 wymaga util.
+
+## konflikt (legacy 1.0 z util 2.0)
+  naruszenie: legacy==1.0 konfliktuje z util==2.0 (util >=2.0).
+
+## pakiet spoza repozytorium
+  naruszenie: Brak ghost==1.0 w repozytorium.
+
+## nieistniejąca wersja
+  naruszenie: Brak util==9.9 w repozytorium.
+
+## niespełnione żądanie
+  naruszenie: Niespełnione żądanie: app.
+
+## ten sam pakiet dwa razy
+  naruszenie: Pakiet util jest zainstalowany więcej niż raz.
+
+
+Czas: 0.00 s
+Wynik: PASS

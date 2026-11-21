@@ -1,0 +1,18 @@
+# 4.5 eksperyment na danych grupy 26
+
+Grupa k = 26. Czasy: budowa bazy (z wczytaniem plików) i rozwiązanie.
+
+N | versions | axioms | result | packages | requested_staleness | other_staleness | build_s | solve_s | verification | warnings
+10 | 46 | 36 | rozwiązanie | 4 | 0 | 0 | 0.004 | 0.02 | OK | 0
+    żądania: pycparser; toml; krypton-tools
+30 | 198 | 187 | rozwiązanie | 4 | 0 | 1 | 0.024 | 0.073 | OK | 3
+    żądania: rfc3986; six; xenon-tools
+100 | 1318 | 1442 | rozwiązanie | 4 | 0 | 0 | 0.248 | 0.969 | OK | 141
+    żądania: rfc3987; iniconfig-jasper; zephyr-kit
+300 | 6604 | 5784 | rozwiązanie | 38 | 0 | 19 | 1.504 | 4.554 | OK | 148
+    żądania: cffi; jsonschema-krypton; thistle-client
+1000 | 21096 | 14776 | rozwiązanie | 6 | 0 | 2 | 3.495 | 5.924 | OK | 473
+    żądania: typing-extensions; dragonmapper-jasper; mosaic-kit
+
+Czas: 16.86 s
+Wynik: PASS
